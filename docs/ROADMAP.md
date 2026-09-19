@@ -24,10 +24,10 @@
 - [x] Mobile chore management
 
 ## Phase 2 — Calendar
-- [ ] Google OAuth
-- [ ] Calendar synchronization
-- [ ] Calendar caching
-- [ ] Calendar widget
+- [x] Google OAuth
+- [x] Calendar synchronization (Google Calendar, plus a public ICS/webcal feed — e.g. an iCloud shared calendar — as an alternate source)
+- [x] Calendar caching
+- [x] Calendar widget
 
 ## Phase 3 — Dashboard
 - [ ] Widget configuration

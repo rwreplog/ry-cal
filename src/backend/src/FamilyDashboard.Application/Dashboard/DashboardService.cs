@@ -23,19 +23,20 @@ public sealed class DashboardService(
 
     public async Task<DashboardDto> GetDashboardAsync(CancellationToken cancellationToken)
     {
-        var eventsTask = calendarProvider.GetUpcomingEventsAsync(cancellationToken);
-        var choresTask = choreProvider.GetActiveChoresAsync(cancellationToken);
-        var weatherTask = weatherProvider.GetCurrentConditionsAsync(cancellationToken);
-        var announcementsTask = announcementProvider.GetActiveAnnouncementsAsync(cancellationToken);
-
-        await Task.WhenAll(eventsTask, choresTask, weatherTask, announcementsTask);
+        // Awaited sequentially, not via Task.WhenAll: multiple providers (calendar,
+        // chores) share the same request-scoped AppDbContext, which isn't safe for
+        // concurrent operations from different providers at once.
+        var events = await calendarProvider.GetUpcomingEventsAsync(cancellationToken);
+        var chores = await choreProvider.GetActiveChoresAsync(cancellationToken);
+        var weather = await weatherProvider.GetCurrentConditionsAsync(cancellationToken);
+        var announcements = await announcementProvider.GetActiveAnnouncementsAsync(cancellationToken);
 
         return new DashboardDto(
             GeneratedAtUtc: timeProvider.GetUtcNow(),
             Layout: DefaultLayout,
-            Calendar: new CalendarSectionDto(await eventsTask),
-            Chores: new ChoresSectionDto(await choresTask),
-            Weather: new WeatherSectionDto(await weatherTask),
-            Announcements: new AnnouncementsSectionDto(await announcementsTask));
+            Calendar: new CalendarSectionDto(events),
+            Chores: new ChoresSectionDto(chores),
+            Weather: new WeatherSectionDto(weather),
+            Announcements: new AnnouncementsSectionDto(announcements));
     }
 }

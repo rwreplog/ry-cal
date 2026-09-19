@@ -12,6 +12,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAppAuthentication();
 builder.Services.AddAppCors(builder.Configuration);
+builder.Services.AddAppDataProtection(builder.Configuration);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

@@ -1,5 +1,10 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5080'
 
+// For real browser navigations (not fetch) — e.g. redirecting to an OAuth consent flow.
+export function apiUrl(path: string): string {
+  return `${API_BASE_URL}${path}`
+}
+
 export class ApiError extends Error {
   readonly status: number
 

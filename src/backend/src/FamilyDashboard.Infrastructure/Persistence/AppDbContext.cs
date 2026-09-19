@@ -10,6 +10,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<User> Users => Set<User>();
     public DbSet<Chore> Chores => Set<Chore>();
     public DbSet<ChoreCompletion> ChoreCompletions => Set<ChoreCompletion>();
+    public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

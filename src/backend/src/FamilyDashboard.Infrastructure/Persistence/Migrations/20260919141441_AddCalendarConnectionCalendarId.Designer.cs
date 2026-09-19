@@ -3,6 +3,7 @@ using System;
 using FamilyDashboard.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FamilyDashboard.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260919141441_AddCalendarConnectionCalendarId")]
+    partial class AddCalendarConnectionCalendarId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,9 +32,10 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("AccessTokenEncrypted")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("AccessTokenExpiresAtUtc")
+                    b.Property<DateTimeOffset>("AccessTokenExpiresAtUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CalendarId")
@@ -42,6 +46,7 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
                         .HasDefaultValue("primary");
 
                     b.Property<string>("ConnectedEmail")
+                        .IsRequired()
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
 
@@ -51,16 +56,13 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("FamilyId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("IcsUrl")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
                     b.Property<string>("RefreshTokenEncrypted")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")

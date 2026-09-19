@@ -17,6 +17,17 @@ internal sealed class StubChoreProvider : IChoreProvider
         ]);
 }
 
+// Calendar now comes from GoogleCalendarProvider (real Google API + Postgres connection
+// row), covered separately by CalendarApiTests. Same rationale as StubChoreProvider above.
+internal sealed class StubCalendarProvider : ICalendarProvider
+{
+    public Task<IReadOnlyList<CalendarEventDto>> GetUpcomingEventsAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<CalendarEventDto>>(
+        [
+            new CalendarEventDto("evt-1", "Soccer practice", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1), "Community Field"),
+        ]);
+}
+
 public class DemoDashboardServiceTests
 {
     [Fact]
@@ -24,7 +35,7 @@ public class DemoDashboardServiceTests
     {
         var timeProvider = TimeProvider.System;
         var service = new DashboardService(
-            new DemoCalendarProvider(timeProvider),
+            new StubCalendarProvider(),
             new StubChoreProvider(),
             new DemoWeatherProvider(),
             new DemoAnnouncementProvider(timeProvider),
