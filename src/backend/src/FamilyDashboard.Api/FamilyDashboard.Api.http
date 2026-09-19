@@ -1,0 +1,6 @@
+@FamilyDashboard.Api_HostAddress = http://localhost:5080
+
+GET {{FamilyDashboard.Api_HostAddress}}/api/dashboard
+Accept: application/json
+
+###
