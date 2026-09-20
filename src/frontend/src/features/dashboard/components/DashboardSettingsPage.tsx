@@ -35,6 +35,10 @@ const SIZE_LABEL: Record<DashboardWidgetConfigDto['size'], string> = {
 
 const SIZES: DashboardWidgetConfigDto['size'][] = ['sm', 'md', 'lg']
 
+// Matches WidgetGrid's FULL_WIDTH_WIDGET_TYPES — the calendar widget's weekly
+// grid always takes the full row, so its size picker would be misleading here.
+const FULL_WIDTH_WIDGET_TYPES = new Set(['calendar'])
+
 // Extracted from the DndContext's onDragEnd so the reorder logic itself — as
 // opposed to dnd-kit's pointer/keyboard geometry, which needs a real layout to
 // resolve — can be unit tested directly.
@@ -183,18 +187,22 @@ function WidgetRow({ widget, onToggleVisible, onChangeSize }: WidgetRowProps) {
 
       <span className="flex-1 font-medium">{label}</span>
 
-      <Select value={widget.size} onValueChange={(value) => onChangeSize(value as DashboardWidgetConfigDto['size'])}>
-        <SelectTrigger size="sm" aria-label={`${label} size`}>
-          <SelectValue>{SIZE_LABEL[widget.size]}</SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {SIZES.map((size) => (
-            <SelectItem key={size} value={size}>
-              {SIZE_LABEL[size]}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {FULL_WIDTH_WIDGET_TYPES.has(widget.type) ? (
+        <span className="text-muted-foreground text-xs">Full width</span>
+      ) : (
+        <Select value={widget.size} onValueChange={(value) => onChangeSize(value as DashboardWidgetConfigDto['size'])}>
+          <SelectTrigger size="sm" aria-label={`${label} size`}>
+            <SelectValue>{SIZE_LABEL[widget.size]}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {SIZES.map((size) => (
+              <SelectItem key={size} value={size}>
+                {SIZE_LABEL[size]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <Switch checked={widget.isVisible} onCheckedChange={onToggleVisible} aria-label={`Show ${label}`} />
     </div>

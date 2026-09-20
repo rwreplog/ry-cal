@@ -53,10 +53,17 @@ public sealed class CalendarProvider(
         }
 
         var now = timeProvider.GetUtcNow();
+        // The dashboard's calendar widget shows the whole current Sun-Sat week, not
+        // just what's left of today — starting the fetch at the exact current moment
+        // would silently drop anything earlier today (e.g. a 9am reminder disappears
+        // from the feed the moment it's 9:01am). A 7-day lookback safely covers the
+        // start of the current week no matter which day "today" is.
+        var rangeStart = now.AddDays(-7);
+        var rangeEnd = now.AddDays(14);
         var events = connection.Provider switch
         {
-            CalendarConnectionProvider.Google => await FetchGoogleEventsAsync(familyId, now, cancellationToken),
-            CalendarConnectionProvider.Ics => await FetchIcsEventsAsync(connection.IcsUrl, now, cancellationToken),
+            CalendarConnectionProvider.Google => await FetchGoogleEventsAsync(familyId, rangeStart, rangeEnd, cancellationToken),
+            CalendarConnectionProvider.Ics => await FetchIcsEventsAsync(connection.IcsUrl, rangeStart, rangeEnd, cancellationToken),
             _ => [],
         };
 
@@ -65,7 +72,7 @@ public sealed class CalendarProvider(
     }
 
     private async Task<IReadOnlyList<CalendarEventDto>> FetchGoogleEventsAsync(
-        Guid familyId, DateTimeOffset now, CancellationToken cancellationToken)
+        Guid familyId, DateTimeOffset rangeStart, DateTimeOffset rangeEnd, CancellationToken cancellationToken)
     {
         var accessToken = await tokenService.GetValidAccessTokenAsync(familyId, cancellationToken);
         if (accessToken is null)
@@ -78,10 +85,13 @@ public sealed class CalendarProvider(
         var client = httpClientFactory.CreateClient("google-calendar");
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
+        // maxResults is ordered oldest-first from rangeStart — bumped from 20 to 30
+        // now that the window includes a 7-day lookback, so a busy past week can't
+        // crowd the upcoming two weeks out of the result entirely.
         var url = $"https://www.googleapis.com/calendar/v3/calendars/{Uri.EscapeDataString(calendarId)}/events" +
-                  $"?timeMin={Uri.EscapeDataString(now.ToString("O"))}" +
-                  $"&timeMax={Uri.EscapeDataString(now.AddDays(14).ToString("O"))}" +
-                  "&singleEvents=true&orderBy=startTime&maxResults=20";
+                  $"?timeMin={Uri.EscapeDataString(rangeStart.ToString("O"))}" +
+                  $"&timeMax={Uri.EscapeDataString(rangeEnd.ToString("O"))}" +
+                  "&singleEvents=true&orderBy=startTime&maxResults=30";
 
         var response = await client.GetAsync(url, cancellationToken);
         if (!response.IsSuccessStatusCode)
@@ -111,7 +121,7 @@ public sealed class CalendarProvider(
     }
 
     private async Task<IReadOnlyList<CalendarEventDto>> FetchIcsEventsAsync(
-        string? icsUrl, DateTimeOffset now, CancellationToken cancellationToken)
+        string? icsUrl, DateTimeOffset rangeStart, DateTimeOffset rangeEnd, CancellationToken cancellationToken)
     {
         if (icsUrl is null)
         {
@@ -138,8 +148,8 @@ public sealed class CalendarProvider(
         try
         {
             var calendar = IcsCalendar.Load(icsText);
-            var endBound = now.AddDays(14).UtcDateTime;
-            var startCalDateTime = new CalDateTime(now.UtcDateTime, hasTime: true);
+            var endBound = rangeEnd.UtcDateTime;
+            var startCalDateTime = new CalDateTime(rangeStart.UtcDateTime, hasTime: true);
 
             // GetOccurrences only takes a start bound (it evaluates RRULEs forward
             // indefinitely) — TakeWhile both bounds the window and stops enumerating
@@ -152,8 +162,11 @@ public sealed class CalendarProvider(
                 .TakeWhile(o => o.Period is not null && o.Period.StartTime.AsUtc <= endBound);
 #pragma warning restore CS8602
 
+            // Bumped from 20 to 30 now that the window includes a 7-day lookback (see
+            // GetUpcomingEventsAsync), so a busy past week can't crowd the upcoming
+            // two weeks out of the result entirely.
             return occurrences
-                .Take(20)
+                .Take(30)
                 .Select(MapIcsOccurrence)
                 .OfType<CalendarEventDto>()
                 .ToList();

@@ -8,6 +8,11 @@ const sizeClasses: Record<WidgetInstanceDto['size'], string> = {
   lg: 'sm:col-span-2 xl:col-span-2',
 }
 
+// The calendar widget is a 7-column weekly grid — it needs the full row to be
+// legible and ignores its configured size, unlike every other widget.
+const FULL_WIDTH_WIDGET_TYPES = new Set(['calendar'])
+const FULL_WIDTH_CLASS = 'sm:col-span-2 xl:col-span-3'
+
 interface WidgetGridProps {
   layout: WidgetInstanceDto[]
 }
@@ -26,8 +31,9 @@ export function WidgetGrid({ layout }: WidgetGridProps) {
         if (!definition) return null
 
         const WidgetComponent = definition.component
+        const className = FULL_WIDTH_WIDGET_TYPES.has(instance.type) ? FULL_WIDTH_CLASS : sizeClasses[instance.size]
         return (
-          <div key={instance.type} className={sizeClasses[instance.size]}>
+          <div key={instance.type} className={className}>
             <WidgetComponent />
           </div>
         )
