@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/features/dashboard/widgets' // registers the real widget definitions (name/icon lookups)
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { useDashboardConfigMutations } from '@/features/dashboard/hooks/useDashboardConfigMutations'
+import { useHouseholdLocation } from '@/features/dashboard/hooks/useHouseholdLocation'
+import { useHouseholdLocationMutations } from '@/features/dashboard/hooks/useHouseholdLocationMutations'
 import type { DashboardConfigDto } from '@/types/dashboard'
 import { DashboardSettingsPage, reorderWidgets } from './DashboardSettingsPage'
 
@@ -15,8 +17,21 @@ vi.mock('@/features/dashboard/hooks/useDashboardConfigMutations', () => ({
   useDashboardConfigMutations: vi.fn(),
 }))
 
+// DashboardSettingsPage also renders LocationSettings (the Weather location
+// search) — mocked here the same way as the other page-level hooks above, since
+// this test suite doesn't wrap renders in a QueryClientProvider.
+vi.mock('@/features/dashboard/hooks/useHouseholdLocation', () => ({
+  useHouseholdLocation: vi.fn(),
+}))
+
+vi.mock('@/features/dashboard/hooks/useHouseholdLocationMutations', () => ({
+  useHouseholdLocationMutations: vi.fn(),
+}))
+
 const mockedUseDashboardConfig = vi.mocked(useDashboardConfig)
 const mockedUseDashboardConfigMutations = vi.mocked(useDashboardConfigMutations)
+const mockedUseHouseholdLocation = vi.mocked(useHouseholdLocation)
+const mockedUseHouseholdLocationMutations = vi.mocked(useHouseholdLocationMutations)
 
 const baseConfig: DashboardConfigDto = {
   theme: 'modern',
@@ -66,6 +81,14 @@ describe('DashboardSettingsPage', () => {
     mockedUseDashboardConfigMutations.mockReturnValue({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       update: { mutate, isPending: false } as any,
+    })
+    mockedUseHouseholdLocation.mockReturnValue({
+      data: { latitude: null, longitude: null, locationLabel: null },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+    mockedUseHouseholdLocationMutations.mockReturnValue({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      update: { mutate: vi.fn(), isPending: false } as any,
     })
 
     // jsdom has no ResizeObserver at all — dnd-kit's DndContext needs one to mount.

@@ -1,5 +1,6 @@
 using FamilyDashboard.Application.Dashboard;
 using FamilyDashboard.Application.Dashboard.Dtos;
+using FamilyDashboard.Application.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +10,8 @@ namespace FamilyDashboard.Api.Controllers;
 [Route("api/dashboard")]
 public sealed class DashboardController(
     IDashboardService dashboardService,
-    IDashboardConfigService dashboardConfigService) : ControllerBase
+    IDashboardConfigService dashboardConfigService,
+    IGeocodingService geocodingService) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
@@ -41,5 +43,33 @@ public sealed class DashboardController(
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpGet("location")]
+    [AllowAnonymous]
+    public async Task<ActionResult<HouseholdLocationDto>> GetLocation(CancellationToken cancellationToken)
+    {
+        return Ok(await dashboardConfigService.GetLocationAsync(cancellationToken));
+    }
+
+    [HttpPut("location")]
+    [AllowAnonymous]
+    public async Task<ActionResult<HouseholdLocationDto>> UpdateLocation(UpdateHouseholdLocationRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await dashboardConfigService.UpdateLocationAsync(request, cancellationToken));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("location/search")]
+    [AllowAnonymous]
+    public async Task<ActionResult<IReadOnlyList<GeocodingResultDto>>> SearchLocations([FromQuery] string q, CancellationToken cancellationToken)
+    {
+        return Ok(await geocodingService.SearchAsync(q, cancellationToken));
     }
 }

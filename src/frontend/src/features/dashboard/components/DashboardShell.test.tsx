@@ -26,6 +26,10 @@ const emptyDashboard: DashboardDto = {
   chores: { items: [] },
   weather: { current: { temperatureF: 70, condition: 'Clear', highF: 75, lowF: 60 } },
   announcements: { items: [] },
+  meals: { items: [] },
+  shoppingList: { items: [], totalUncheckedCount: 0 },
+  birthdays: { items: [] },
+  countdowns: { items: [] },
 }
 
 describe('DashboardShell', () => {

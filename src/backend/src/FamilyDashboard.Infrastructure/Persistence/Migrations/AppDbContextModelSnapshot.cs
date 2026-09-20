@@ -22,6 +22,64 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.Announcement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset>("PostedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PostedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId");
+
+                    b.ToTable("Announcements");
+                });
+
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.Birthday", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId");
+
+                    b.ToTable("Birthdays");
+                });
+
             modelBuilder.Entity("FamilyDashboard.Domain.Entities.CalendarConnection", b =>
                 {
                     b.Property<Guid>("Id")
@@ -145,6 +203,33 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
                     b.ToTable("ChoreCompletions");
                 });
 
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.Countdown", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateOnly>("TargetDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId");
+
+                    b.ToTable("Countdowns");
+                });
+
             modelBuilder.Entity("FamilyDashboard.Domain.Entities.Dashboard", b =>
                 {
                     b.Property<Guid>("Id")
@@ -156,6 +241,16 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("FamilyId")
                         .HasColumnType("uuid");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("LocationLabel")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("Theme")
                         .IsRequired()
@@ -255,6 +350,67 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
                     b.ToTable("FamilyMembers");
                 });
 
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.MealPlanEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId");
+
+                    b.HasIndex("FamilyId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("MealPlanEntries");
+                });
+
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.ShoppingListItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsChecked")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId");
+
+                    b.ToTable("ShoppingListItems");
+                });
+
             modelBuilder.Entity("FamilyDashboard.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -289,6 +445,24 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
                     b.HasIndex("FamilyMemberId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.Announcement", b =>
+                {
+                    b.HasOne("FamilyDashboard.Domain.Entities.Family", null)
+                        .WithMany()
+                        .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.Birthday", b =>
+                {
+                    b.HasOne("FamilyDashboard.Domain.Entities.Family", null)
+                        .WithMany()
+                        .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FamilyDashboard.Domain.Entities.CalendarConnection", b =>
@@ -329,6 +503,15 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.Countdown", b =>
+                {
+                    b.HasOne("FamilyDashboard.Domain.Entities.Family", null)
+                        .WithMany()
+                        .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("FamilyDashboard.Domain.Entities.Dashboard", b =>
                 {
                     b.HasOne("FamilyDashboard.Domain.Entities.Family", null)
@@ -348,6 +531,24 @@ namespace FamilyDashboard.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("FamilyDashboard.Domain.Entities.FamilyMember", b =>
+                {
+                    b.HasOne("FamilyDashboard.Domain.Entities.Family", null)
+                        .WithMany()
+                        .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.MealPlanEntry", b =>
+                {
+                    b.HasOne("FamilyDashboard.Domain.Entities.Family", null)
+                        .WithMany()
+                        .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FamilyDashboard.Domain.Entities.ShoppingListItem", b =>
                 {
                     b.HasOne("FamilyDashboard.Domain.Entities.Family", null)
                         .WithMany()

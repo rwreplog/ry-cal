@@ -4,5 +4,5 @@ namespace FamilyDashboard.Application.Providers;
 
 public interface IAnnouncementProvider
 {
-    Task<IReadOnlyList<AnnouncementDto>> GetActiveAnnouncementsAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<AnnouncementSummaryDto>> GetActiveAnnouncementsAsync(CancellationToken cancellationToken);
 }

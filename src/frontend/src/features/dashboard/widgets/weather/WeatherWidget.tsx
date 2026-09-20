@@ -18,7 +18,11 @@ export function WeatherWidget() {
 
         {!isLoading && isError && <p className="text-destructive text-sm">Couldn&apos;t load weather.</p>}
 
-        {!isLoading && !isError && data && (
+        {!isLoading && !isError && data && !data.weather.current && (
+          <p className="text-muted-foreground text-sm">Set your home location in Display settings to see weather.</p>
+        )}
+
+        {!isLoading && !isError && data?.weather.current && (
           <div className="flex items-center justify-between">
             <span className="text-5xl font-semibold tracking-tight">{Math.round(data.weather.current.temperatureF)}°</span>
             <div className="text-right">

@@ -35,13 +35,43 @@ export interface AnnouncementDto {
   postedBy: string
 }
 
+export interface MealPlanSummaryDto {
+  id: string
+  date: string
+  name: string
+  description: string | null
+}
+
+export interface ShoppingListItemSummaryDto {
+  id: string
+  name: string
+}
+
+export interface UpcomingBirthdayDto {
+  id: string
+  name: string
+  date: string
+  daysUntil: number
+}
+
+export interface CountdownSummaryDto {
+  id: string
+  label: string
+  targetDate: string
+  daysUntil: number
+}
+
 export interface DashboardDto {
   generatedAtUtc: string
   layout: WidgetInstanceDto[]
   calendar: { events: CalendarEventDto[] }
   chores: { items: ChoreSummaryDto[] }
-  weather: { current: WeatherSnapshotDto }
+  weather: { current: WeatherSnapshotDto | null }
   announcements: { items: AnnouncementDto[] }
+  meals: { items: MealPlanSummaryDto[] }
+  shoppingList: { items: ShoppingListItemSummaryDto[]; totalUncheckedCount: number }
+  birthdays: { items: UpcomingBirthdayDto[] }
+  countdowns: { items: CountdownSummaryDto[] }
 }
 
 export interface DashboardWidgetConfigDto {
@@ -60,4 +90,24 @@ export type UpdateDashboardWidgetRequest = DashboardWidgetConfigDto
 export interface UpdateDashboardConfigRequest {
   widgets: UpdateDashboardWidgetRequest[]
   theme: string
+}
+
+export interface HouseholdLocationDto {
+  latitude: number | null
+  longitude: number | null
+  locationLabel: string | null
+}
+
+export interface UpdateHouseholdLocationRequest {
+  latitude: number
+  longitude: number
+  locationLabel: string | null
+}
+
+export interface GeocodingResultDto {
+  name: string
+  latitude: number
+  longitude: number
+  admin1: string | null
+  country: string
 }

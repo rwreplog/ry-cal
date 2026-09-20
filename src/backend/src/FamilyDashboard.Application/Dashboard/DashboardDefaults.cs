@@ -15,5 +15,9 @@ public static class DashboardDefaults
         ("chores", WidgetSize.Md),
         ("weather", WidgetSize.Sm),
         ("announcements", WidgetSize.Md),
+        ("meals", WidgetSize.Md),
+        ("shopping", WidgetSize.Md),
+        ("birthdays", WidgetSize.Md),
+        ("countdowns", WidgetSize.Md),
     ];
 }

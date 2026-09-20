@@ -4,5 +4,5 @@ namespace FamilyDashboard.Application.Providers;
 
 public interface IWeatherProvider
 {
-    Task<WeatherSnapshotDto> GetCurrentConditionsAsync(CancellationToken cancellationToken);
+    Task<WeatherSnapshotDto?> GetCurrentConditionsAsync(CancellationToken cancellationToken);
 }

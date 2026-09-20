@@ -9,6 +9,10 @@ public sealed class DashboardService(
     IChoreProvider choreProvider,
     IWeatherProvider weatherProvider,
     IAnnouncementProvider announcementProvider,
+    IMealPlanProvider mealPlanProvider,
+    IShoppingListProvider shoppingListProvider,
+    IBirthdayProvider birthdayProvider,
+    ICountdownProvider countdownProvider,
     IDashboardConfigService dashboardConfigService,
     TimeProvider timeProvider) : IDashboardService
 {
@@ -22,6 +26,10 @@ public sealed class DashboardService(
         var chores = await choreProvider.GetActiveChoresAsync(cancellationToken);
         var weather = await weatherProvider.GetCurrentConditionsAsync(cancellationToken);
         var announcements = await announcementProvider.GetActiveAnnouncementsAsync(cancellationToken);
+        var meals = await mealPlanProvider.GetUpcomingMealsAsync(cancellationToken);
+        var shoppingList = await shoppingListProvider.GetUncheckedItemsAsync(cancellationToken);
+        var birthdays = await birthdayProvider.GetUpcomingBirthdaysAsync(cancellationToken);
+        var countdowns = await countdownProvider.GetActiveCountdownsAsync(cancellationToken);
 
         var layout = config.Widgets
             .Where(w => w.IsVisible)
@@ -34,6 +42,10 @@ public sealed class DashboardService(
             Calendar: new CalendarSectionDto(events),
             Chores: new ChoresSectionDto(chores),
             Weather: new WeatherSectionDto(weather),
-            Announcements: new AnnouncementsSectionDto(announcements));
+            Announcements: new AnnouncementsSectionDto(announcements),
+            Meals: new MealsSectionDto(meals),
+            ShoppingList: shoppingList,
+            Birthdays: new BirthdaysSectionDto(birthdays),
+            Countdowns: new CountdownsSectionDto(countdowns));
     }
 }

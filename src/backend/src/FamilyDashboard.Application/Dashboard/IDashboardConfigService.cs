@@ -7,4 +7,8 @@ public interface IDashboardConfigService
     Task<DashboardConfigDto> GetConfigAsync(CancellationToken cancellationToken);
 
     Task<DashboardConfigDto> UpdateConfigAsync(UpdateDashboardConfigRequest request, CancellationToken cancellationToken);
+
+    Task<HouseholdLocationDto> GetLocationAsync(CancellationToken cancellationToken);
+
+    Task<HouseholdLocationDto> UpdateLocationAsync(UpdateHouseholdLocationRequest request, CancellationToken cancellationToken);
 }

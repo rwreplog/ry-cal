@@ -1,4 +1,11 @@
-import type { DashboardConfigDto, DashboardDto, UpdateDashboardConfigRequest } from '@/types/dashboard'
+import type {
+  DashboardConfigDto,
+  DashboardDto,
+  GeocodingResultDto,
+  HouseholdLocationDto,
+  UpdateDashboardConfigRequest,
+  UpdateHouseholdLocationRequest,
+} from '@/types/dashboard'
 import { apiGet, apiPut } from './httpClient'
 
 export function fetchDashboard(signal?: AbortSignal): Promise<DashboardDto> {
@@ -11,4 +18,16 @@ export function fetchDashboardConfig(signal?: AbortSignal): Promise<DashboardCon
 
 export function updateDashboardConfig(request: UpdateDashboardConfigRequest): Promise<DashboardConfigDto> {
   return apiPut<DashboardConfigDto>('/api/dashboard/config', request)
+}
+
+export function fetchHouseholdLocation(signal?: AbortSignal): Promise<HouseholdLocationDto> {
+  return apiGet<HouseholdLocationDto>('/api/dashboard/location', signal)
+}
+
+export function updateHouseholdLocation(request: UpdateHouseholdLocationRequest): Promise<HouseholdLocationDto> {
+  return apiPut<HouseholdLocationDto>('/api/dashboard/location', request)
+}
+
+export function searchLocations(query: string, signal?: AbortSignal): Promise<GeocodingResultDto[]> {
+  return apiGet<GeocodingResultDto[]>(`/api/dashboard/location/search?q=${encodeURIComponent(query)}`, signal)
 }

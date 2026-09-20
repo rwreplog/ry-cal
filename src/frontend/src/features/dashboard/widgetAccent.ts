@@ -10,7 +10,15 @@
 // rule gets generated, while tailwind-merge still (correctly, per its own logic)
 // drops the earlier bg-card class it appears to conflict with — net result:
 // no background at all.
-export type AccentableWidget = 'clock' | 'chores' | 'weather' | 'announcements'
+export type AccentableWidget =
+  | 'clock'
+  | 'chores'
+  | 'weather'
+  | 'announcements'
+  | 'meals'
+  | 'shopping'
+  | 'birthdays'
+  | 'countdowns'
 
 const WIDGET_ACCENT_CLASSES: Record<AccentableWidget, string> = {
   clock: 'bg-[var(--widget-clock-bg,var(--card))] text-[var(--widget-clock-fg,var(--card-foreground))]',
@@ -18,6 +26,11 @@ const WIDGET_ACCENT_CLASSES: Record<AccentableWidget, string> = {
   weather: 'bg-[var(--widget-weather-bg,var(--card))] text-[var(--widget-weather-fg,var(--card-foreground))]',
   announcements:
     'bg-[var(--widget-announcements-bg,var(--card))] text-[var(--widget-announcements-fg,var(--card-foreground))]',
+  meals: 'bg-[var(--widget-meals-bg,var(--card))] text-[var(--widget-meals-fg,var(--card-foreground))]',
+  shopping: 'bg-[var(--widget-shopping-bg,var(--card))] text-[var(--widget-shopping-fg,var(--card-foreground))]',
+  birthdays: 'bg-[var(--widget-birthdays-bg,var(--card))] text-[var(--widget-birthdays-fg,var(--card-foreground))]',
+  countdowns:
+    'bg-[var(--widget-countdowns-bg,var(--card))] text-[var(--widget-countdowns-fg,var(--card-foreground))]',
 }
 
 export function widgetAccentClasses(type: AccentableWidget): string {

@@ -13,6 +13,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
     public DbSet<Dashboard> Dashboards => Set<Dashboard>();
     public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
+    public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
+    public DbSet<ShoppingListItem> ShoppingListItems => Set<ShoppingListItem>();
+    public DbSet<Birthday> Birthdays => Set<Birthday>();
+    public DbSet<Countdown> Countdowns => Set<Countdown>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

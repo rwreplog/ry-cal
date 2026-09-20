@@ -9,6 +9,15 @@ public sealed class Dashboard
     // change (a CSS token block + one constant entry), never a migration.
     public string Theme { get; set; } = "modern";
 
+    // Household location for the Weather widget — null until the admin sets it via
+    // Display settings. Lives here rather than a new entity because Dashboard is
+    // already the single-row-per-family settings blob and SeedData guarantees a row
+    // exists; unlike CalendarConnection, "no location yet" isn't a distinct workflow
+    // state worth its own entity.
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public string? LocationLabel { get; set; }
+
     public DateTimeOffset CreatedAtUtc { get; init; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
 

@@ -204,6 +204,14 @@
     --widget-weather-fg: oklch(0.3 0.07 235);
     --widget-announcements-bg: oklch(0.92 0.05 15);
     --widget-announcements-fg: oklch(0.32 0.09 15);
+    --widget-meals-bg: oklch(0.92 0.06 45);
+    --widget-meals-fg: oklch(0.3 0.08 45);
+    --widget-shopping-bg: oklch(0.92 0.06 140);
+    --widget-shopping-fg: oklch(0.28 0.08 140);
+    --widget-birthdays-bg: oklch(0.92 0.07 330);
+    --widget-birthdays-fg: oklch(0.32 0.1 330);
+    --widget-countdowns-bg: oklch(0.92 0.05 260);
+    --widget-countdowns-fg: oklch(0.3 0.08 260);
 }
 
 @layer base {

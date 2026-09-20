@@ -26,6 +26,7 @@ import { getWidget } from '@/features/dashboard/registry/widgetRegistry'
 import { THEMES } from '@/features/theme/constants'
 import { cn } from '@/lib/utils'
 import type { DashboardWidgetConfigDto } from '@/types/dashboard'
+import { LocationSettings } from './LocationSettings'
 
 const SIZE_LABEL: Record<DashboardWidgetConfigDto['size'], string> = {
   sm: 'Small',
@@ -108,6 +109,8 @@ export function DashboardSettingsPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <LocationSettings />
+
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Theme</h2>
         <Select value={theme} onValueChange={handleThemeChange}>
