@@ -2,12 +2,13 @@ import { Megaphone } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
+import { widgetAccentClasses } from '@/features/dashboard/widgetAccent'
 
 export function AnnouncementsWidget() {
   const { data, isLoading, isError } = useDashboard()
 
   return (
-    <Card>
+    <Card className={widgetAccentClasses('announcements')}>
       <CardHeader className="flex-row items-center gap-2">
         <Megaphone className="text-muted-foreground size-5" aria-hidden="true" />
         <CardTitle className="text-xl">Announcements</CardTitle>

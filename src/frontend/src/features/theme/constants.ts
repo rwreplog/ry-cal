@@ -9,6 +9,7 @@ export const THEMES: readonly ThemeDefinition[] = [
   { id: 'modern', label: 'Modern' },
   { id: 'dark', label: 'Dark' },
   { id: 'cozy', label: 'Cozy' },
+  { id: 'family', label: 'Family' },
 ]
 
 export const DEFAULT_THEME = 'modern'

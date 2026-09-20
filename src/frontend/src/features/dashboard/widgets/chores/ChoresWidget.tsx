@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
 import { useChoreMutations } from '@/features/chores/hooks/useChoreMutations'
+import { widgetAccentClasses } from '@/features/dashboard/widgetAccent'
 
 export function ChoresWidget() {
   const { data, isLoading, isError } = useDashboard()
   const { complete } = useChoreMutations()
 
   return (
-    <Card>
+    <Card className={widgetAccentClasses('chores')}>
       <CardHeader className="flex-row items-center gap-2">
         <ListChecks className="text-muted-foreground size-5" aria-hidden="true" />
         <CardTitle className="text-xl">Chores</CardTitle>

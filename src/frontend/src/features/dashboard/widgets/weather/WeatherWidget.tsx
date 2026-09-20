@@ -2,12 +2,13 @@ import { CloudSun } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
+import { widgetAccentClasses } from '@/features/dashboard/widgetAccent'
 
 export function WeatherWidget() {
   const { data, isLoading, isError } = useDashboard()
 
   return (
-    <Card>
+    <Card className={widgetAccentClasses('weather')}>
       <CardHeader className="flex-row items-center gap-2">
         <CloudSun className="text-muted-foreground size-5" aria-hidden="true" />
         <CardTitle className="text-xl">Weather</CardTitle>

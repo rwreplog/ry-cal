@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+import { widgetAccentClasses } from '@/features/dashboard/widgetAccent'
 
 export function ClockWidget() {
   const [now, setNow] = useState(() => new Date())
@@ -17,7 +18,7 @@ export function ClockWidget() {
   })
 
   return (
-    <Card>
+    <Card className={widgetAccentClasses('clock')}>
       <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
         <span className="text-6xl font-semibold tracking-tight tabular-nums">{time}</span>
         <span className="text-muted-foreground text-xl">{date}</span>
