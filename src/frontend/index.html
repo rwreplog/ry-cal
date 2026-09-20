@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f172a" />
     <title>Replogle HQ</title>
+    <script>
+      // No-FOUC paint optimization: applies the last-known theme before mount so
+      // Dark/Cozy households don't see a flash of Modern while the dashboard config
+      // fetch resolves. The server value (fetched by ThemeProvider) is always the
+      // real source of truth and overwrites this on every load.
+      try {
+        var t = localStorage.getItem('rhq-theme')
+        if (t) document.documentElement.dataset.theme = t
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

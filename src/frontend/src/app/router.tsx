@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { DashboardShell } from '@/features/dashboard/components/DashboardShell'
+import { DashboardSettingsPage } from '@/features/dashboard/components/DashboardSettingsPage'
 import { CalendarSettingsPage } from '@/features/calendar/components/CalendarSettingsPage'
 import { ChoresPage } from '@/features/chores/components/ChoresPage'
 import { FamilyMembersPage } from '@/features/family/components/FamilyMembersPage'
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: 'chores', element: <ChoresPage /> },
       { path: 'family', element: <FamilyMembersPage /> },
       { path: 'calendar', element: <CalendarSettingsPage /> },
+      { path: 'dashboard', element: <DashboardSettingsPage /> },
     ],
   },
 ])

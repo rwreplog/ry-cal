@@ -1,3 +1,5 @@
+using FamilyDashboard.Domain.Entities;
+
 namespace FamilyDashboard.Application.Dashboard.Dtos;
 
 public sealed record DashboardDto(
@@ -9,13 +11,6 @@ public sealed record DashboardDto(
     AnnouncementsSectionDto Announcements);
 
 public sealed record WidgetInstanceDto(string Type, int Order, WidgetSize Size);
-
-public enum WidgetSize
-{
-    Sm,
-    Md,
-    Lg,
-}
 
 public sealed record CalendarSectionDto(IReadOnlyList<CalendarEventDto> Events);
 

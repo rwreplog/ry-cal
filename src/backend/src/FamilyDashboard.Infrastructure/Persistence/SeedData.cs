@@ -1,3 +1,4 @@
+using FamilyDashboard.Application.Dashboard;
 using FamilyDashboard.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,18 +13,49 @@ public static class SeedData
 
     public static async Task EnsureSeededAsync(AppDbContext db, CancellationToken cancellationToken = default)
     {
-        if (await db.Families.AnyAsync(cancellationToken))
+        // Family- and Dashboard-seeding each get their own existence check — an
+        // existing database (already has a Family from Phase 0/1) must still get a
+        // Dashboard row seeded the first time this runs post-Phase-3.
+        if (!await db.Families.AnyAsync(cancellationToken))
         {
-            return;
+            db.Families.Add(new Family
+            {
+                Id = DefaultFamilyId,
+                Name = "Replogle Family",
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+            });
+
+            await db.SaveChangesAsync(cancellationToken);
         }
 
-        db.Families.Add(new Family
+        if (!await db.Dashboards.AnyAsync(d => d.FamilyId == DefaultFamilyId, cancellationToken))
         {
-            Id = DefaultFamilyId,
-            Name = "Replogle Family",
-            CreatedAtUtc = DateTimeOffset.UtcNow,
-        });
+            var now = DateTimeOffset.UtcNow;
+            var dashboard = new Dashboard
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = DefaultFamilyId,
+                Theme = DashboardDefaults.DefaultTheme,
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now,
+            };
 
-        await db.SaveChangesAsync(cancellationToken);
+            var order = 0;
+            foreach (var (type, size) in DashboardDefaults.Widgets)
+            {
+                dashboard.Widgets.Add(new DashboardWidget
+                {
+                    Id = Guid.NewGuid(),
+                    DashboardId = dashboard.Id,
+                    Type = type,
+                    Order = order++,
+                    Size = size,
+                    IsVisible = true,
+                });
+            }
+
+            db.Dashboards.Add(dashboard);
+            await db.SaveChangesAsync(cancellationToken);
+        }
     }
 }

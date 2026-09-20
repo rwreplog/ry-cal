@@ -43,3 +43,21 @@ export interface DashboardDto {
   weather: { current: WeatherSnapshotDto }
   announcements: { items: AnnouncementDto[] }
 }
+
+export interface DashboardWidgetConfigDto {
+  type: string
+  size: 'sm' | 'md' | 'lg'
+  isVisible: boolean
+}
+
+export interface DashboardConfigDto {
+  widgets: DashboardWidgetConfigDto[]
+  theme: string
+}
+
+export type UpdateDashboardWidgetRequest = DashboardWidgetConfigDto
+
+export interface UpdateDashboardConfigRequest {
+  widgets: UpdateDashboardWidgetRequest[]
+  theme: string
+}

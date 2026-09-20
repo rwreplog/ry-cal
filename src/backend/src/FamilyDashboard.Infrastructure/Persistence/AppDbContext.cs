@@ -11,6 +11,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Chore> Chores => Set<Chore>();
     public DbSet<ChoreCompletion> ChoreCompletions => Set<ChoreCompletion>();
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
+    public DbSet<Dashboard> Dashboards => Set<Dashboard>();
+    public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

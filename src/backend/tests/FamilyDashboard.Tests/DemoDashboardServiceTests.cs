@@ -1,6 +1,7 @@
 using FamilyDashboard.Application.Dashboard;
 using FamilyDashboard.Application.Dashboard.Dtos;
 using FamilyDashboard.Application.Providers;
+using FamilyDashboard.Domain.Entities;
 using FamilyDashboard.Infrastructure.Providers;
 
 namespace FamilyDashboard.Tests;
@@ -28,6 +29,26 @@ internal sealed class StubCalendarProvider : ICalendarProvider
         ]);
 }
 
+// Dashboard config now comes from DashboardConfigService (real Postgres), covered
+// separately by DashboardConfigApiTests. Same rationale as StubChoreProvider above.
+internal sealed class StubDashboardConfigService : IDashboardConfigService
+{
+    private static readonly DashboardConfigDto Config = new(
+        [
+            new DashboardWidgetConfigDto("clock", WidgetSize.Sm, true),
+            new DashboardWidgetConfigDto("calendar", WidgetSize.Md, true),
+            new DashboardWidgetConfigDto("chores", WidgetSize.Md, true),
+            new DashboardWidgetConfigDto("weather", WidgetSize.Sm, true),
+            new DashboardWidgetConfigDto("announcements", WidgetSize.Md, true),
+        ],
+        "modern");
+
+    public Task<DashboardConfigDto> GetConfigAsync(CancellationToken cancellationToken) => Task.FromResult(Config);
+
+    public Task<DashboardConfigDto> UpdateConfigAsync(UpdateDashboardConfigRequest request, CancellationToken cancellationToken) =>
+        throw new NotSupportedException();
+}
+
 public class DemoDashboardServiceTests
 {
     [Fact]
@@ -39,6 +60,7 @@ public class DemoDashboardServiceTests
             new StubChoreProvider(),
             new DemoWeatherProvider(),
             new DemoAnnouncementProvider(timeProvider),
+            new StubDashboardConfigService(),
             timeProvider);
 
         var dashboard = await service.GetDashboardAsync(CancellationToken.None);

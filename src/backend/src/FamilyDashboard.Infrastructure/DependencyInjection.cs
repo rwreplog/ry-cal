@@ -1,11 +1,13 @@
 using FamilyDashboard.Application.Calendar;
 using FamilyDashboard.Application.Chores;
 using FamilyDashboard.Application.Common;
+using FamilyDashboard.Application.Dashboard;
 using FamilyDashboard.Application.FamilyMembers;
 using FamilyDashboard.Application.Providers;
 using FamilyDashboard.Infrastructure.Auth;
 using FamilyDashboard.Infrastructure.Calendar;
 using FamilyDashboard.Infrastructure.Chores;
+using FamilyDashboard.Infrastructure.Dashboards;
 using FamilyDashboard.Infrastructure.FamilyMembers;
 using FamilyDashboard.Infrastructure.Persistence;
 using FamilyDashboard.Infrastructure.Providers;
@@ -37,6 +39,8 @@ public static class DependencyInjection
         services.AddHttpClient("ics-feed");
         services.AddScoped<GoogleTokenService>();
         services.AddScoped<ICalendarConnectionService, CalendarConnectionService>();
+
+        services.AddScoped<IDashboardConfigService, DashboardConfigService>();
 
         services.AddScoped<ICalendarProvider, CalendarProvider>();
         services.AddScoped<IChoreProvider, EfChoreProvider>();

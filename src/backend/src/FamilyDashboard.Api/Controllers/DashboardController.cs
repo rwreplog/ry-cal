@@ -7,7 +7,9 @@ namespace FamilyDashboard.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-public sealed class DashboardController(IDashboardService dashboardService) : ControllerBase
+public sealed class DashboardController(
+    IDashboardService dashboardService,
+    IDashboardConfigService dashboardConfigService) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
@@ -15,5 +17,29 @@ public sealed class DashboardController(IDashboardService dashboardService) : Co
     {
         var dashboard = await dashboardService.GetDashboardAsync(cancellationToken);
         return Ok(dashboard);
+    }
+
+    [HttpGet("config")]
+    [AllowAnonymous]
+    public async Task<ActionResult<DashboardConfigDto>> GetConfig(CancellationToken cancellationToken)
+    {
+        var config = await dashboardConfigService.GetConfigAsync(cancellationToken);
+        return Ok(config);
+    }
+
+    [HttpPut("config")]
+    [AllowAnonymous]
+    public async Task<ActionResult<DashboardConfigDto>> UpdateConfig(
+        UpdateDashboardConfigRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var config = await dashboardConfigService.UpdateConfigAsync(request, cancellationToken);
+            return Ok(config);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

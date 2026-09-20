@@ -30,12 +30,12 @@
 - [x] Calendar widget
 
 ## Phase 3 — Dashboard
-- [ ] Widget configuration
-- [ ] Widget ordering
-- [ ] Theme system
-- [ ] TV mode
-- [ ] Automatic refresh
-- [ ] Full-screen dashboard
+- [x] Widget configuration
+- [x] Widget ordering
+- [x] Theme system (Modern, Dark, Cozy — architecture ready for more)
+- [x] TV mode
+- [x] Automatic refresh (existing 5-minute interval, now with a visible "last updated" indicator)
+- [x] Full-screen dashboard
 
 ## Phase 4 — Family Features
 - [ ] Weather

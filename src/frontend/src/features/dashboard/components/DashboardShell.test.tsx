@@ -1,8 +1,17 @@
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
 import type { DashboardDto } from '@/types/dashboard'
 import { DashboardShell } from './DashboardShell'
+
+function renderShell() {
+  return render(
+    <MemoryRouter>
+      <DashboardShell />
+    </MemoryRouter>,
+  )
+}
 
 vi.mock('@/features/dashboard/hooks/useDashboard', () => ({
   useDashboard: vi.fn(),
@@ -33,7 +42,7 @@ describe('DashboardShell', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    render(<DashboardShell />)
+    renderShell()
 
     expect(screen.getByRole('status', { name: /loading dashboard/i })).toBeInTheDocument()
   })
@@ -47,7 +56,7 @@ describe('DashboardShell', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    render(<DashboardShell />)
+    renderShell()
 
     expect(screen.getByText(/couldn't load the dashboard/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
@@ -62,7 +71,7 @@ describe('DashboardShell', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    render(<DashboardShell />)
+    renderShell()
 
     expect(screen.getByText(/no widgets configured yet/i)).toBeInTheDocument()
   })

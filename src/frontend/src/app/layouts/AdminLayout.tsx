@@ -1,4 +1,4 @@
-import { CalendarDays, ListChecks, Users, LayoutDashboard } from 'lucide-react'
+import { CalendarDays, ListChecks, Users, LayoutDashboard, SlidersHorizontal } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/admin/chores', label: 'Chores', icon: ListChecks },
   { to: '/admin/family', label: 'Family', icon: Users },
   { to: '/admin/calendar', label: 'Calendar', icon: CalendarDays },
+  { to: '/admin/dashboard', label: 'Display', icon: SlidersHorizontal },
 ]
 
 export function AdminLayout() {
