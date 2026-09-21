@@ -76,12 +76,6 @@ export function DashboardSettingsPage() {
     }
   }, [data, seeded])
 
-  // Leaving the page always clears an active preview — it's meant to be a quick
-  // look, not something that lingers app-wide after navigating away.
-  useEffect(() => {
-    return () => setPreviewThemeId(null)
-  }, [setPreviewThemeId])
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -146,7 +140,8 @@ export function DashboardSettingsPage() {
         <h2 className="text-lg font-semibold">Preview a season or holiday</h2>
         <p className="text-muted-foreground text-sm">
           See what any of Auto&apos;s palettes looks like right now, without waiting for the date. This is just a look —
-          it doesn&apos;t change or save your actual theme, and clears when you leave this page.
+          it doesn&apos;t change or save your actual theme. It stays on as you look around, including on the dashboard
+          itself — a banner will let you stop it from anywhere.
         </p>
         <div className="flex gap-2">
           <Select value={previewThemeId ?? undefined} onValueChange={setPreviewThemeId}>

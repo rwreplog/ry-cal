@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import type { ReactNode } from 'react'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { PreviewThemeBanner } from '@/features/theme/PreviewThemeBanner'
 import { PreviewThemeProvider } from '@/features/theme/PreviewThemeContext'
 import { ThemeProvider } from '@/features/theme/ThemeProvider'
 
@@ -19,7 +20,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <PreviewThemeProvider>
         <ThemeProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <PreviewThemeBanner />
+            {children}
+          </TooltipProvider>
         </ThemeProvider>
       </PreviewThemeProvider>
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}

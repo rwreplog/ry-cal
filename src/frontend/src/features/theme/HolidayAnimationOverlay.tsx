@@ -18,8 +18,8 @@ const HOLIDAY_ANIMATIONS: Record<HolidayId, HolidayAnimationConfig> = {
   easter: { emojis: ['🥚', '🐰', '🌷'], direction: 'fall' },
   'fourth-of-july': { emojis: ['🎆', '✨', '🎇'], direction: 'rise' },
   halloween: { emojis: ['🦇', '👻', '🎃'], direction: 'fall' },
-  thanksgiving: { emojis: ['🍂', '🍁'], direction: 'fall' },
-  christmas: { emojis: ['❄️'], direction: 'fall' },
+  thanksgiving: { emojis: ['🍂', '🍁', '🦃', '🍂', '🌽', '🍁'], direction: 'fall' },
+  christmas: { emojis: ['❄️', '❄️', '🎄', '🎁', '🎄', '⭐'], direction: 'fall' },
 }
 
 const PARTICLE_COUNT = 14
