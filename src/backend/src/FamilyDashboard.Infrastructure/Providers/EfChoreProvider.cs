@@ -11,7 +11,9 @@ namespace FamilyDashboard.Infrastructure.Providers;
 // providers (out of scope this phase).
 public sealed class EfChoreProvider(AppDbContext db, ICurrentUserService currentUser) : IChoreProvider
 {
-    private const int DashboardChoreLimit = 8;
+    // Raised from 8 now that the calendar widget also buckets this same list across
+    // a 7-day week (was previously only ever rendered as one flat card).
+    private const int DashboardChoreLimit = 30;
 
     public async Task<IReadOnlyList<ChoreSummaryDto>> GetActiveChoresAsync(CancellationToken cancellationToken)
     {
@@ -23,7 +25,7 @@ public sealed class EfChoreProvider(AppDbContext db, ICurrentUserService current
         var rows = await db.Chores
             .Where(c => c.FamilyId == familyId && !c.IsComplete)
             .GroupJoin(db.FamilyMembers, c => c.AssignedToFamilyMemberId, m => (Guid?)m.Id, (c, members) => new { Chore = c, Members = members })
-            .SelectMany(x => x.Members.DefaultIfEmpty(), (x, m) => new { x.Chore, AssignedToName = m != null ? m.Name : null })
+            .SelectMany(x => x.Members.DefaultIfEmpty(), (x, m) => new { x.Chore, AssignedToName = m != null ? m.Name : null, AssignedToColor = m != null ? m.Color : null })
             .OrderBy(x => x.Chore.DueAtUtc)
             .Take(DashboardChoreLimit)
             .ToListAsync(cancellationToken);
@@ -34,6 +36,7 @@ public sealed class EfChoreProvider(AppDbContext db, ICurrentUserService current
                 x.Chore.Title,
                 x.AssignedToName ?? "Unassigned",
                 x.Chore.AssignedToFamilyMemberId,
+                x.AssignedToColor,
                 x.Chore.DueAtUtc,
                 x.Chore.IsComplete))
             .ToList();

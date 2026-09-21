@@ -32,6 +32,7 @@ public sealed record ChoreSummaryDto(
     string Title,
     string AssignedTo,
     Guid? AssignedToFamilyMemberId,
+    string? AssignedToColor,
     DateTimeOffset DueAtUtc,
     bool IsComplete);
 

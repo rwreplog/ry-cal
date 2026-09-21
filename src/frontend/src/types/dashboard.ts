@@ -17,6 +17,7 @@ export interface ChoreSummaryDto {
   title: string
   assignedTo: string
   assignedToFamilyMemberId: string | null
+  assignedToColor: string | null
   dueAtUtc: string
   isComplete: boolean
 }

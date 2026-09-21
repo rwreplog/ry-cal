@@ -9,9 +9,13 @@ const sizeClasses: Record<WidgetInstanceDto['size'], string> = {
 }
 
 // The calendar widget is a 7-column weekly grid — it needs the full row to be
-// legible and ignores its configured size, unlike every other widget.
+// legible and ignores its configured size, unlike every other widget. It's also
+// the densest widget on the dashboard (multiple stacked sections per day plus a
+// legend), so it gets a bit of extra bottom margin on top of the grid's normal
+// gap-6, giving it more breathing room from whatever row follows than the uniform
+// gap every other widget pair gets.
 const FULL_WIDTH_WIDGET_TYPES = new Set(['calendar'])
-const FULL_WIDTH_CLASS = 'sm:col-span-2 xl:col-span-3'
+const FULL_WIDTH_CLASS = 'sm:col-span-2 xl:col-span-3 mb-2'
 
 interface WidgetGridProps {
   layout: WidgetInstanceDto[]

@@ -13,7 +13,7 @@ internal sealed class StubChoreProvider : IChoreProvider
     public Task<IReadOnlyList<ChoreSummaryDto>> GetActiveChoresAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<ChoreSummaryDto>>(
         [
-            new ChoreSummaryDto("chore-1", "Take out the trash", "Sam", null, DateTimeOffset.UtcNow, false),
+            new ChoreSummaryDto("chore-1", "Take out the trash", "Sam", null, "#0ea5e9", DateTimeOffset.UtcNow, false),
         ]);
 }
 
@@ -87,14 +87,10 @@ internal sealed class StubDashboardConfigService : IDashboardConfigService
 {
     private static readonly DashboardConfigDto Config = new(
         [
-            new DashboardWidgetConfigDto("clock", WidgetSize.Sm, true),
             new DashboardWidgetConfigDto("calendar", WidgetSize.Md, true),
             new DashboardWidgetConfigDto("chores", WidgetSize.Md, true),
-            new DashboardWidgetConfigDto("weather", WidgetSize.Sm, true),
             new DashboardWidgetConfigDto("announcements", WidgetSize.Md, true),
-            new DashboardWidgetConfigDto("meals", WidgetSize.Md, true),
             new DashboardWidgetConfigDto("shopping", WidgetSize.Md, true),
-            new DashboardWidgetConfigDto("birthdays", WidgetSize.Md, true),
             new DashboardWidgetConfigDto("countdowns", WidgetSize.Md, true),
         ],
         "modern");
@@ -142,7 +138,7 @@ public class DashboardServiceCompositionTests
         Assert.NotNull(dashboard.Weather.Current);
         Assert.True(dashboard.Weather.Current!.TemperatureF is > -100 and < 150);
         Assert.Equal(
-            ["clock", "calendar", "chores", "weather", "announcements", "meals", "shopping", "birthdays", "countdowns"],
+            ["calendar", "chores", "announcements", "shopping", "countdowns"],
             dashboard.Layout.Select(w => w.Type));
     }
 }

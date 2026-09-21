@@ -36,7 +36,7 @@ const mockedUseHouseholdLocationMutations = vi.mocked(useHouseholdLocationMutati
 const baseConfig: DashboardConfigDto = {
   theme: 'modern',
   widgets: [
-    { type: 'clock', size: 'sm', isVisible: true },
+    { type: 'announcements', size: 'sm', isVisible: true },
     { type: 'calendar', size: 'md', isVisible: true },
     { type: 'chores', size: 'md', isVisible: true },
   ],
@@ -44,17 +44,17 @@ const baseConfig: DashboardConfigDto = {
 
 describe('reorderWidgets', () => {
   it('moves the active widget to the position of the target widget', () => {
-    const result = reorderWidgets(baseConfig.widgets, 'clock', 'chores')
-    expect(result.map((w) => w.type)).toEqual(['calendar', 'chores', 'clock'])
+    const result = reorderWidgets(baseConfig.widgets, 'announcements', 'chores')
+    expect(result.map((w) => w.type)).toEqual(['calendar', 'chores', 'announcements'])
   })
 
   it('is a no-op when the active and target widget are the same', () => {
-    const result = reorderWidgets(baseConfig.widgets, 'clock', 'clock')
+    const result = reorderWidgets(baseConfig.widgets, 'announcements', 'announcements')
     expect(result).toBe(baseConfig.widgets)
   })
 
   it('is a no-op when either widget type is unknown', () => {
-    const result = reorderWidgets(baseConfig.widgets, 'clock', 'does-not-exist')
+    const result = reorderWidgets(baseConfig.widgets, 'announcements', 'does-not-exist')
     expect(result).toBe(baseConfig.widgets)
   })
 })
@@ -107,7 +107,7 @@ describe('DashboardSettingsPage', () => {
   it('renders a row per widget using registry metadata for the label', () => {
     render(<DashboardSettingsPage />)
 
-    expect(screen.getByText('Clock')).toBeInTheDocument()
+    expect(screen.getByText('Announcements')).toBeInTheDocument()
     expect(screen.getByText('Calendar')).toBeInTheDocument()
     expect(screen.getByText('Chores')).toBeInTheDocument()
   })
@@ -115,7 +115,7 @@ describe('DashboardSettingsPage', () => {
   it('gives each widget a keyboard-focusable, labeled drag handle', () => {
     render(<DashboardSettingsPage />)
 
-    const handle = screen.getByRole('button', { name: /reorder clock/i })
+    const handle = screen.getByRole('button', { name: /reorder announcements/i })
     expect(handle).toHaveAttribute('tabindex', '0')
   })
 
@@ -123,11 +123,11 @@ describe('DashboardSettingsPage', () => {
     const user = userEvent.setup()
     render(<DashboardSettingsPage />)
 
-    const clockSwitch = screen.getByRole('switch', { name: /show clock/i })
-    expect(clockSwitch).toHaveAttribute('aria-checked', 'true')
+    const announcementsSwitch = screen.getByRole('switch', { name: /show announcements/i })
+    expect(announcementsSwitch).toHaveAttribute('aria-checked', 'true')
 
-    await user.click(clockSwitch)
-    expect(clockSwitch).toHaveAttribute('aria-checked', 'false')
+    await user.click(announcementsSwitch)
+    expect(announcementsSwitch).toHaveAttribute('aria-checked', 'false')
     expect(mutate).not.toHaveBeenCalled()
 
     await user.click(screen.getByRole('button', { name: /save changes/i }))
@@ -135,7 +135,7 @@ describe('DashboardSettingsPage', () => {
     expect(mutate).toHaveBeenCalledTimes(1)
     const payload = mutate.mock.calls[0][0]
     expect(payload.theme).toBe('modern')
-    expect(payload.widgets.find((w: { type: string }) => w.type === 'clock').isVisible).toBe(false)
+    expect(payload.widgets.find((w: { type: string }) => w.type === 'announcements').isVisible).toBe(false)
   })
 
   it('seeds the theme picker from the current server-persisted theme', () => {

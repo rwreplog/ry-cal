@@ -30,24 +30,30 @@ public sealed class DashboardConfigService(
         return dashboard is null ? DefaultConfig() : MergeWithDefaults(ToDto(dashboard));
     }
 
-    // Read-time merge, deliberately not persisted here: a family's saved config only
-    // has the widget types that existed when they last saved. Widget types added in a
-    // later release (e.g. this phase's meals/shopping/birthdays/countdowns) would
-    // otherwise never appear for an existing household — there's no "add a widget"
-    // UI, only reorder/resize/show-hide for types already present. Appending the
-    // missing defaults on every read is cheap (a HashSet diff) and self-healing for
-    // every family, current and future, with no backfill/migration step. The next
-    // real "Save changes" persists the merged set, making this a one-time no-op
-    // after that.
+    // Read-time reconciliation, deliberately not persisted here: a family's saved
+    // config only has the widget types that existed when they last saved. Widget
+    // types added in a later release (e.g. Phase 4's meals/shopping/birthdays/
+    // countdowns) would otherwise never appear for an existing household — there's
+    // no "add a widget" UI, only reorder/resize/show-hide for types already present.
+    // Conversely, types retired in a later release (clock/weather → the page header;
+    // meals/birthdays → per-day sections in the Calendar widget) would otherwise
+    // linger forever in an existing household's saved rows. Doing both against the
+    // same DashboardDefaults.Widgets list on every read
+    // is cheap (two HashSet diffs) and self-healing for every family, current and
+    // future, with no backfill/migration step. The next real "Save changes" persists
+    // the reconciled set, making this a one-time no-op after that.
     private static DashboardConfigDto MergeWithDefaults(DashboardConfigDto config)
     {
-        var existingTypes = config.Widgets.Select(w => w.Type).ToHashSet();
+        var knownTypes = DashboardDefaults.Widgets.Select(w => w.Type).ToHashSet();
+        var kept = config.Widgets.Where(w => knownTypes.Contains(w.Type)).ToList();
+
+        var existingTypes = kept.Select(w => w.Type).ToHashSet();
         var missing = DashboardDefaults.Widgets
             .Where(w => !existingTypes.Contains(w.Type))
             .Select(w => new DashboardWidgetConfigDto(w.Type, w.Size, IsVisible: true))
             .ToList();
 
-        return missing.Count == 0 ? config : config with { Widgets = [.. config.Widgets, .. missing] };
+        return kept.Count == config.Widgets.Count && missing.Count == 0 ? config : config with { Widgets = [.. kept, .. missing] };
     }
 
     public async Task<DashboardConfigDto> UpdateConfigAsync(UpdateDashboardConfigRequest request, CancellationToken cancellationToken)

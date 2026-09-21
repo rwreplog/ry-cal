@@ -8,16 +8,16 @@ public static class DashboardDefaults
 {
     public const string DefaultTheme = "modern";
 
+    // Clock and Weather moved into the page header (DashboardShell) as an
+    // always-visible strip; Meals and Birthdays moved into the Calendar widget as
+    // per-day sections, same as Chores. DashboardConfigService prunes any family's
+    // already-saved rows for all four retired types against this same list.
     public static readonly IReadOnlyList<(string Type, WidgetSize Size)> Widgets =
     [
-        ("clock", WidgetSize.Sm),
         ("calendar", WidgetSize.Md),
         ("chores", WidgetSize.Md),
-        ("weather", WidgetSize.Sm),
         ("announcements", WidgetSize.Md),
-        ("meals", WidgetSize.Md),
         ("shopping", WidgetSize.Md),
-        ("birthdays", WidgetSize.Md),
         ("countdowns", WidgetSize.Md),
     ];
 }
