@@ -21,4 +21,22 @@ public class OpenMeteoWeatherProviderTests
     {
         Assert.Equal("Unknown", OpenMeteoWeatherProvider.DescribeWeatherCode(-1));
     }
+
+    [Theory]
+    [InlineData(0, false)] // Clear sky
+    [InlineData(1, false)] // Mainly clear
+    [InlineData(2, false)] // Partly cloudy
+    [InlineData(3, false)] // Overcast
+    [InlineData(45, false)] // Fog — a visibility hazard, not "inclement"
+    [InlineData(48, false)] // Depositing rime fog
+    [InlineData(51, true)] // Drizzle
+    [InlineData(61, true)] // Rain
+    [InlineData(71, true)] // Snow
+    [InlineData(80, true)] // Rain showers
+    [InlineData(95, true)] // Thunderstorm
+    [InlineData(99, true)] // Thunderstorm with hail
+    public void IsInclementWeather_ClassifiesPrecipitationCodesAsInclement(int code, bool expected)
+    {
+        Assert.Equal(expected, OpenMeteoWeatherProvider.IsInclementWeather(code));
+    }
 }

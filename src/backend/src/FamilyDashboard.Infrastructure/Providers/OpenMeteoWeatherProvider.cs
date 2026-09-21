@@ -61,7 +61,7 @@ public sealed class OpenMeteoWeatherProvider(
         var url = "https://api.open-meteo.com/v1/forecast" +
                   $"?latitude={latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}" +
                   $"&longitude={longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}" +
-                  "&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min" +
+                  "&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code" +
                   "&temperature_unit=fahrenheit&timezone=auto&forecast_days=1";
 
         try
@@ -80,12 +80,17 @@ public sealed class OpenMeteoWeatherProvider(
 
             var highF = payload.Daily?.TemperatureMax?.FirstOrDefault() ?? payload.Current.Temperature;
             var lowF = payload.Daily?.TemperatureMin?.FirstOrDefault() ?? payload.Current.Temperature;
+            // Falls back to the current moment's code if the daily block is somehow
+            // missing it — still a reasonable "what to expect today" signal.
+            var dailyCode = payload.Daily?.WeatherCode?.FirstOrDefault() ?? payload.Current.WeatherCode;
 
             return new WeatherSnapshotDto(
                 payload.Current.Temperature,
                 DescribeWeatherCode(payload.Current.WeatherCode),
                 highF,
-                lowF);
+                lowF,
+                IsInclementWeather(dailyCode),
+                DescribeWeatherCode(dailyCode));
         }
         catch
         {
@@ -115,6 +120,13 @@ public sealed class OpenMeteoWeatherProvider(
         _ => "Unknown",
     };
 
+    // Every WMO code from drizzle (51) up is some form of precipitation — fog
+    // (45/48) is a visibility hazard, not "inclement" in the usual sense, so it's
+    // deliberately excluded. Based on the *daily* code (today's dominant/forecast
+    // condition), not the current moment's, so this answers "should I expect rain
+    // or snow today," not just "is it raining right now."
+    internal static bool IsInclementWeather(int code) => code >= 51;
+
     private sealed record ForecastResponse(
         [property: JsonPropertyName("current")] CurrentConditions? Current,
         [property: JsonPropertyName("daily")] DailyConditions? Daily);
@@ -125,5 +137,6 @@ public sealed class OpenMeteoWeatherProvider(
 
     private sealed record DailyConditions(
         [property: JsonPropertyName("temperature_2m_max")] IReadOnlyList<double>? TemperatureMax,
-        [property: JsonPropertyName("temperature_2m_min")] IReadOnlyList<double>? TemperatureMin);
+        [property: JsonPropertyName("temperature_2m_min")] IReadOnlyList<double>? TemperatureMin,
+        [property: JsonPropertyName("weather_code")] IReadOnlyList<int>? WeatherCode);
 }

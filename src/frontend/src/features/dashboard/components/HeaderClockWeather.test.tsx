@@ -20,7 +20,7 @@ describe('HeaderClockWeather', () => {
     vi.useRealTimers()
   })
 
-  it('shows the current time and date even before dashboard data has loaded', () => {
+  it('shows the current time and a short date even before dashboard data has loaded', () => {
     mockedUseDashboard.mockReturnValue({
       data: undefined,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,31 +29,58 @@ describe('HeaderClockWeather', () => {
     render(<HeaderClockWeather />)
 
     expect(screen.getByText('12:00 PM')).toBeInTheDocument()
-    expect(screen.getByText(/thursday, january 1/i)).toBeInTheDocument()
+    // Short form ("Thu, Jan 1"), not the long form ("Thursday, January 1") — the
+    // long form was wide enough to wrap onto its own second line in the header's
+    // narrow middle column.
+    expect(screen.getByText(/thu, jan 1/i)).toBeInTheDocument()
   })
 
-  it('shows weather and a matching condition icon once dashboard data includes a current snapshot', () => {
+  it('shows temp, condition, high/low, and a matching icon once dashboard data includes a current snapshot', () => {
     mockedUseDashboard.mockReturnValue({
-      data: { weather: { current: { temperatureF: 68, condition: 'Overcast', highF: 70, lowF: 60 } } },
+      data: {
+        weather: {
+          current: {
+            temperatureF: 68,
+            condition: 'Overcast',
+            highF: 70,
+            lowF: 60,
+            inclementWeatherExpected: false,
+            forecastCondition: 'Overcast',
+          },
+        },
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
     const { container } = render(<HeaderClockWeather />)
 
     expect(screen.getByText('68°')).toBeInTheDocument()
-    expect(screen.getByText('Overcast')).toBeInTheDocument()
+    expect(screen.getByText(/overcast/i)).toBeInTheDocument()
+    expect(screen.getByText(/H70°/)).toBeInTheDocument()
+    expect(screen.getByText(/L60°/)).toBeInTheDocument()
     expect(container.querySelector('svg')).toBeInTheDocument()
   })
 
   it('falls back to a generic icon for a condition string it does not recognize', () => {
     mockedUseDashboard.mockReturnValue({
-      data: { weather: { current: { temperatureF: 68, condition: 'Volcanic ash', highF: 70, lowF: 60 } } },
+      data: {
+        weather: {
+          current: {
+            temperatureF: 68,
+            condition: 'Volcanic ash',
+            highF: 70,
+            lowF: 60,
+            inclementWeatherExpected: false,
+            forecastCondition: 'Volcanic ash',
+          },
+        },
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
     const { container } = render(<HeaderClockWeather />)
 
-    expect(screen.getByText('Volcanic ash')).toBeInTheDocument()
+    expect(screen.getByText(/volcanic ash/i)).toBeInTheDocument()
     expect(container.querySelector('svg')).toBeInTheDocument()
   })
 
@@ -66,5 +93,49 @@ describe('HeaderClockWeather', () => {
     render(<HeaderClockWeather />)
 
     expect(screen.queryByText('°', { exact: false })).not.toBeInTheDocument()
+  })
+
+  it('shows an inclement-weather notice when rain or snow is expected today', () => {
+    mockedUseDashboard.mockReturnValue({
+      data: {
+        weather: {
+          current: {
+            temperatureF: 45,
+            condition: 'Partly cloudy',
+            highF: 50,
+            lowF: 38,
+            inclementWeatherExpected: true,
+            forecastCondition: 'Rain',
+          },
+        },
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    render(<HeaderClockWeather />)
+
+    expect(screen.getByText(/rain expected today/i)).toBeInTheDocument()
+  })
+
+  it('omits the inclement-weather notice when none is expected', () => {
+    mockedUseDashboard.mockReturnValue({
+      data: {
+        weather: {
+          current: {
+            temperatureF: 68,
+            condition: 'Clear sky',
+            highF: 75,
+            lowF: 60,
+            inclementWeatherExpected: false,
+            forecastCondition: 'Clear sky',
+          },
+        },
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    render(<HeaderClockWeather />)
+
+    expect(screen.queryByText(/expected today/i)).not.toBeInTheDocument()
   })
 })

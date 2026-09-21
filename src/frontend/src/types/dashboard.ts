@@ -27,6 +27,8 @@ export interface WeatherSnapshotDto {
   condition: string
   highF: number
   lowF: number
+  inclementWeatherExpected: boolean
+  forecastCondition: string
 }
 
 export interface AnnouncementDto {

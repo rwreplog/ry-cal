@@ -39,7 +39,13 @@ public sealed record ChoreSummaryDto(
 // Nullable: no household location has been configured yet is a real, non-error state.
 public sealed record WeatherSectionDto(WeatherSnapshotDto? Current);
 
-public sealed record WeatherSnapshotDto(double TemperatureF, string Condition, double HighF, double LowF);
+public sealed record WeatherSnapshotDto(
+    double TemperatureF,
+    string Condition,
+    double HighF,
+    double LowF,
+    bool InclementWeatherExpected,
+    string ForecastCondition);
 
 public sealed record AnnouncementsSectionDto(IReadOnlyList<AnnouncementSummaryDto> Items);
 

@@ -23,7 +23,16 @@ function dashboardWith(chores: DashboardDto['chores']['items']): DashboardDto {
     layout: [],
     calendar: { events: [] },
     chores: { items: chores },
-    weather: { current: { temperatureF: 70, condition: 'Clear', highF: 75, lowF: 60 } },
+    weather: {
+      current: {
+        temperatureF: 70,
+        condition: 'Clear',
+        highF: 75,
+        lowF: 60,
+        inclementWeatherExpected: false,
+        forecastCondition: 'Clear',
+      },
+    },
     announcements: { items: [] },
     meals: { items: [] },
     shoppingList: { items: [], totalUncheckedCount: 0 },

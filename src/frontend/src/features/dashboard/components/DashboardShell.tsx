@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
 import { useFullscreen } from '@/features/dashboard/hooks/useFullscreen'
 import { useTvMode } from '@/features/dashboard/hooks/useTvMode'
+import { HolidayAnimationOverlay } from '@/features/theme/HolidayAnimationOverlay'
 import { DashboardError } from './DashboardError'
 import { DashboardLoading } from './DashboardLoading'
 import { HeaderClockWeather } from './HeaderClockWeather'
@@ -26,6 +27,7 @@ export function DashboardShell() {
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+      <HolidayAnimationOverlay />
       <header className="grid grid-cols-1 items-center gap-4 sm:grid-cols-3">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Replogle HQ</h1>

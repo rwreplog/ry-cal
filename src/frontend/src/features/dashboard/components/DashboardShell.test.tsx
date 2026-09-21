@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
+import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import type { DashboardDto } from '@/types/dashboard'
 import { DashboardShell } from './DashboardShell'
 
@@ -17,14 +18,32 @@ vi.mock('@/features/dashboard/hooks/useDashboard', () => ({
   useDashboard: vi.fn(),
 }))
 
+// HolidayAnimationOverlay (mounted inside DashboardShell) reads the real
+// useDashboardConfig hook to check whether "Auto (Seasonal)" is selected — mocked
+// here the same way as useDashboard, since this test suite doesn't wrap renders in
+// a QueryClientProvider.
+vi.mock('@/features/dashboard/hooks/useDashboardConfig', () => ({
+  useDashboardConfig: vi.fn(),
+}))
+
 const mockedUseDashboard = vi.mocked(useDashboard)
+const mockedUseDashboardConfig = vi.mocked(useDashboardConfig)
 
 const emptyDashboard: DashboardDto = {
   generatedAtUtc: new Date().toISOString(),
   layout: [],
   calendar: { events: [] },
   chores: { items: [] },
-  weather: { current: { temperatureF: 70, condition: 'Clear', highF: 75, lowF: 60 } },
+  weather: {
+    current: {
+      temperatureF: 70,
+      condition: 'Clear',
+      highF: 75,
+      lowF: 60,
+      inclementWeatherExpected: false,
+      forecastCondition: 'Clear',
+    },
+  },
   announcements: { items: [] },
   meals: { items: [] },
   shoppingList: { items: [], totalUncheckedCount: 0 },
@@ -35,6 +54,11 @@ const emptyDashboard: DashboardDto = {
 describe('DashboardShell', () => {
   beforeEach(() => {
     mockedUseDashboard.mockReset()
+    mockedUseDashboardConfig.mockReset()
+    mockedUseDashboardConfig.mockReturnValue({
+      data: { theme: 'modern', widgets: [] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
   })
 
   it('renders a loading state while the dashboard is fetching', () => {

@@ -23,7 +23,7 @@ import { Switch } from '@/components/ui/switch'
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { useDashboardConfigMutations } from '@/features/dashboard/hooks/useDashboardConfigMutations'
 import { getWidget } from '@/features/dashboard/registry/widgetRegistry'
-import { THEMES } from '@/features/theme/constants'
+import { THEMES, getEffectiveTheme } from '@/features/theme/constants'
 import { cn } from '@/lib/utils'
 import type { DashboardWidgetConfigDto } from '@/types/dashboard'
 import { LocationSettings } from './LocationSettings'
@@ -95,7 +95,10 @@ export function DashboardSettingsPage() {
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme)
-    document.documentElement.dataset.theme = newTheme // instant preview, no reload
+    // Instant preview, no reload — resolved the same way ThemeProvider resolves it
+    // on every other page, so picking "Auto (Seasonal)" previews today's actual
+    // holiday palette rather than literally applying the unstyled "auto" id.
+    document.documentElement.dataset.theme = getEffectiveTheme(newTheme)
     update.mutate({ widgets, theme: newTheme })
   }
 

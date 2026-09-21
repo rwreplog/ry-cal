@@ -34,7 +34,7 @@ internal sealed class StubCalendarProvider : ICalendarProvider
 internal sealed class StubWeatherProvider : IWeatherProvider
 {
     public Task<WeatherSnapshotDto?> GetCurrentConditionsAsync(CancellationToken cancellationToken) =>
-        Task.FromResult<WeatherSnapshotDto?>(new WeatherSnapshotDto(68, "Partly cloudy", 74, 58));
+        Task.FromResult<WeatherSnapshotDto?>(new WeatherSnapshotDto(68, "Partly cloudy", 74, 58, false, "Partly cloudy"));
 }
 
 // Announcements now come from EfAnnouncementProvider (real Postgres), covered

@@ -206,6 +206,401 @@
     --widget-countdowns-fg: oklch(0.3 0.08 260);
 }
 
+/* Seasonal / holiday themes — applied by resolveSeasonalTheme (features/theme/
+   seasonalTheme.ts) when "Auto (Seasonal)" is selected, one per calendar month
+   (Easter overrides its ~10-day window on top of whichever month it falls in).
+   None of these are directly selectable in the theme picker — "auto" is the only
+   user-facing entry, and it never reaches the DOM as data-theme="auto" itself. No
+   per-widget accent vars here (that's specific to the Family theme's look); widgets
+   fall back to --card/--card-foreground as normal. */
+
+/* January — après-holidays, icy and calm. */
+[data-theme='seasonal-winter'] {
+    --background: oklch(0.97 0.01 230);
+    --foreground: oklch(0.25 0.02 250);
+    --card: oklch(0.99 0.005 230);
+    --card-foreground: oklch(0.25 0.02 250);
+    --popover: oklch(0.99 0.005 230);
+    --popover-foreground: oklch(0.25 0.02 250);
+    --primary: oklch(0.55 0.12 230);
+    --primary-foreground: oklch(0.98 0.005 230);
+    --secondary: oklch(0.94 0.015 230);
+    --secondary-foreground: oklch(0.3 0.02 250);
+    --muted: oklch(0.94 0.015 230);
+    --muted-foreground: oklch(0.52 0.02 240);
+    --accent: oklch(0.88 0.04 210);
+    --accent-foreground: oklch(0.3 0.05 230);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.9 0.02 230);
+    --input: oklch(0.9 0.02 230);
+    --ring: oklch(0.55 0.12 230);
+    --chart-1: oklch(0.8 0.06 230);
+    --chart-2: oklch(0.7 0.08 210);
+    --chart-3: oklch(0.6 0.1 250);
+    --chart-4: oklch(0.5 0.08 270);
+    --chart-5: oklch(0.4 0.06 230);
+    --sidebar: oklch(0.95 0.015 230);
+    --sidebar-foreground: oklch(0.25 0.02 250);
+    --sidebar-primary: oklch(0.55 0.12 230);
+    --sidebar-primary-foreground: oklch(0.98 0.005 230);
+    --sidebar-accent: oklch(0.88 0.04 210);
+    --sidebar-accent-foreground: oklch(0.3 0.05 230);
+    --sidebar-border: oklch(0.9 0.02 230);
+    --sidebar-ring: oklch(0.55 0.12 230);
+}
+
+/* February — Valentine's Day. */
+[data-theme='seasonal-valentines'] {
+    --background: oklch(0.97 0.015 15);
+    --foreground: oklch(0.28 0.03 10);
+    --card: oklch(0.995 0.01 15);
+    --card-foreground: oklch(0.28 0.03 10);
+    --popover: oklch(0.995 0.01 15);
+    --popover-foreground: oklch(0.28 0.03 10);
+    --primary: oklch(0.55 0.22 10);
+    --primary-foreground: oklch(0.98 0.01 15);
+    --secondary: oklch(0.93 0.03 15);
+    --secondary-foreground: oklch(0.3 0.03 10);
+    --muted: oklch(0.93 0.03 15);
+    --muted-foreground: oklch(0.52 0.03 15);
+    --accent: oklch(0.85 0.08 340);
+    --accent-foreground: oklch(0.32 0.08 340);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.89 0.03 15);
+    --input: oklch(0.89 0.03 15);
+    --ring: oklch(0.55 0.22 10);
+    --chart-1: oklch(0.75 0.15 10);
+    --chart-2: oklch(0.65 0.18 350);
+    --chart-3: oklch(0.7 0.1 340);
+    --chart-4: oklch(0.6 0.15 0);
+    --chart-5: oklch(0.5 0.18 10);
+    --sidebar: oklch(0.95 0.02 15);
+    --sidebar-foreground: oklch(0.28 0.03 10);
+    --sidebar-primary: oklch(0.55 0.22 10);
+    --sidebar-primary-foreground: oklch(0.98 0.01 15);
+    --sidebar-accent: oklch(0.85 0.08 340);
+    --sidebar-accent-foreground: oklch(0.32 0.08 340);
+    --sidebar-border: oklch(0.89 0.03 15);
+    --sidebar-ring: oklch(0.55 0.22 10);
+}
+
+/* March (outside Easter's window) — St Patrick's Day. */
+[data-theme='seasonal-st-patricks'] {
+    --background: oklch(0.97 0.015 140);
+    --foreground: oklch(0.25 0.03 150);
+    --card: oklch(0.995 0.01 140);
+    --card-foreground: oklch(0.25 0.03 150);
+    --popover: oklch(0.995 0.01 140);
+    --popover-foreground: oklch(0.25 0.03 150);
+    --primary: oklch(0.5 0.15 150);
+    --primary-foreground: oklch(0.98 0.01 140);
+    --secondary: oklch(0.93 0.03 140);
+    --secondary-foreground: oklch(0.28 0.03 150);
+    --muted: oklch(0.93 0.03 140);
+    --muted-foreground: oklch(0.5 0.03 150);
+    --accent: oklch(0.85 0.1 95);
+    --accent-foreground: oklch(0.32 0.08 95);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.88 0.03 140);
+    --input: oklch(0.88 0.03 140);
+    --ring: oklch(0.5 0.15 150);
+    --chart-1: oklch(0.65 0.15 150);
+    --chart-2: oklch(0.55 0.12 160);
+    --chart-3: oklch(0.75 0.12 95);
+    --chart-4: oklch(0.45 0.1 150);
+    --chart-5: oklch(0.35 0.08 150);
+    --sidebar: oklch(0.95 0.02 140);
+    --sidebar-foreground: oklch(0.25 0.03 150);
+    --sidebar-primary: oklch(0.5 0.15 150);
+    --sidebar-primary-foreground: oklch(0.98 0.01 140);
+    --sidebar-accent: oklch(0.85 0.1 95);
+    --sidebar-accent-foreground: oklch(0.32 0.08 95);
+    --sidebar-border: oklch(0.88 0.03 140);
+    --sidebar-ring: oklch(0.5 0.15 150);
+}
+
+/* A ~10-day window ending Easter Monday — pastel lavender/mint/yellow. */
+[data-theme='seasonal-easter'] {
+    --background: oklch(0.97 0.015 320);
+    --foreground: oklch(0.3 0.03 300);
+    --card: oklch(0.995 0.01 320);
+    --card-foreground: oklch(0.3 0.03 300);
+    --popover: oklch(0.995 0.01 320);
+    --popover-foreground: oklch(0.3 0.03 300);
+    --primary: oklch(0.62 0.14 300);
+    --primary-foreground: oklch(0.98 0.01 320);
+    --secondary: oklch(0.92 0.04 100);
+    --secondary-foreground: oklch(0.32 0.04 90);
+    --muted: oklch(0.93 0.03 320);
+    --muted-foreground: oklch(0.52 0.03 300);
+    --accent: oklch(0.88 0.07 160);
+    --accent-foreground: oklch(0.3 0.07 160);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.89 0.03 320);
+    --input: oklch(0.89 0.03 320);
+    --ring: oklch(0.62 0.14 300);
+    --chart-1: oklch(0.8 0.08 340);
+    --chart-2: oklch(0.78 0.08 160);
+    --chart-3: oklch(0.8 0.08 95);
+    --chart-4: oklch(0.72 0.1 300);
+    --chart-5: oklch(0.75 0.08 220);
+    --sidebar: oklch(0.95 0.02 320);
+    --sidebar-foreground: oklch(0.3 0.03 300);
+    --sidebar-primary: oklch(0.62 0.14 300);
+    --sidebar-primary-foreground: oklch(0.98 0.01 320);
+    --sidebar-accent: oklch(0.88 0.07 160);
+    --sidebar-accent-foreground: oklch(0.3 0.07 160);
+    --sidebar-border: oklch(0.89 0.03 320);
+    --sidebar-ring: oklch(0.62 0.14 300);
+}
+
+/* April / May (outside Easter's window) — fresh spring green and floral pink. */
+[data-theme='seasonal-spring'] {
+    --background: oklch(0.97 0.015 130);
+    --foreground: oklch(0.27 0.03 140);
+    --card: oklch(0.995 0.01 130);
+    --card-foreground: oklch(0.27 0.03 140);
+    --popover: oklch(0.995 0.01 130);
+    --popover-foreground: oklch(0.27 0.03 140);
+    --primary: oklch(0.58 0.14 135);
+    --primary-foreground: oklch(0.98 0.01 130);
+    --secondary: oklch(0.92 0.04 340);
+    --secondary-foreground: oklch(0.32 0.05 340);
+    --muted: oklch(0.93 0.03 130);
+    --muted-foreground: oklch(0.5 0.03 140);
+    --accent: oklch(0.87 0.08 90);
+    --accent-foreground: oklch(0.32 0.07 90);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.89 0.03 130);
+    --input: oklch(0.89 0.03 130);
+    --ring: oklch(0.58 0.14 135);
+    --chart-1: oklch(0.72 0.12 135);
+    --chart-2: oklch(0.75 0.1 340);
+    --chart-3: oklch(0.8 0.1 90);
+    --chart-4: oklch(0.65 0.1 200);
+    --chart-5: oklch(0.5 0.1 140);
+    --sidebar: oklch(0.95 0.02 130);
+    --sidebar-foreground: oklch(0.27 0.03 140);
+    --sidebar-primary: oklch(0.58 0.14 135);
+    --sidebar-primary-foreground: oklch(0.98 0.01 130);
+    --sidebar-accent: oklch(0.87 0.08 90);
+    --sidebar-accent-foreground: oklch(0.32 0.07 90);
+    --sidebar-border: oklch(0.89 0.03 130);
+    --sidebar-ring: oklch(0.58 0.14 135);
+}
+
+/* June / August — bright sunny sky blue and warm yellow. */
+[data-theme='seasonal-summer'] {
+    --background: oklch(0.97 0.015 220);
+    --foreground: oklch(0.27 0.03 230);
+    --card: oklch(0.995 0.008 220);
+    --card-foreground: oklch(0.27 0.03 230);
+    --popover: oklch(0.995 0.008 220);
+    --popover-foreground: oklch(0.27 0.03 230);
+    --primary: oklch(0.62 0.16 230);
+    --primary-foreground: oklch(0.98 0.008 220);
+    --secondary: oklch(0.9 0.06 90);
+    --secondary-foreground: oklch(0.32 0.06 90);
+    --muted: oklch(0.93 0.02 220);
+    --muted-foreground: oklch(0.5 0.03 230);
+    --accent: oklch(0.85 0.1 60);
+    --accent-foreground: oklch(0.32 0.08 50);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.88 0.03 220);
+    --input: oklch(0.88 0.03 220);
+    --ring: oklch(0.62 0.16 230);
+    --chart-1: oklch(0.7 0.14 230);
+    --chart-2: oklch(0.8 0.12 90);
+    --chart-3: oklch(0.75 0.12 60);
+    --chart-4: oklch(0.6 0.12 200);
+    --chart-5: oklch(0.5 0.1 230);
+    --sidebar: oklch(0.95 0.02 220);
+    --sidebar-foreground: oklch(0.27 0.03 230);
+    --sidebar-primary: oklch(0.62 0.16 230);
+    --sidebar-primary-foreground: oklch(0.98 0.008 220);
+    --sidebar-accent: oklch(0.85 0.1 60);
+    --sidebar-accent-foreground: oklch(0.32 0.08 50);
+    --sidebar-border: oklch(0.88 0.03 220);
+    --sidebar-ring: oklch(0.62 0.16 230);
+}
+
+/* July — Independence Day: navy primary, bold red accent. */
+[data-theme='seasonal-fourth-of-july'] {
+    --background: oklch(0.98 0.005 250);
+    --foreground: oklch(0.22 0.03 250);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.22 0.03 250);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.22 0.03 250);
+    --primary: oklch(0.45 0.18 255);
+    --primary-foreground: oklch(0.98 0.005 250);
+    --secondary: oklch(0.9 0.03 250);
+    --secondary-foreground: oklch(0.25 0.03 250);
+    --muted: oklch(0.94 0.01 250);
+    --muted-foreground: oklch(0.5 0.02 250);
+    --accent: oklch(0.55 0.2 25);
+    --accent-foreground: oklch(0.98 0.01 25);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.88 0.02 250);
+    --input: oklch(0.88 0.02 250);
+    --ring: oklch(0.45 0.18 255);
+    --chart-1: oklch(0.5 0.2 25);
+    --chart-2: oklch(0.85 0.01 250);
+    --chart-3: oklch(0.45 0.18 255);
+    --chart-4: oklch(0.35 0.15 255);
+    --chart-5: oklch(0.4 0.18 20);
+    --sidebar: oklch(0.95 0.01 250);
+    --sidebar-foreground: oklch(0.22 0.03 250);
+    --sidebar-primary: oklch(0.45 0.18 255);
+    --sidebar-primary-foreground: oklch(0.98 0.005 250);
+    --sidebar-accent: oklch(0.55 0.2 25);
+    --sidebar-accent-foreground: oklch(0.98 0.01 25);
+    --sidebar-border: oklch(0.88 0.02 250);
+    --sidebar-ring: oklch(0.45 0.18 255);
+}
+
+/* September — early autumn, warm amber and rust ahead of Halloween's own look. */
+[data-theme='seasonal-fall'] {
+    --background: oklch(0.96 0.02 70);
+    --foreground: oklch(0.28 0.03 50);
+    --card: oklch(0.99 0.012 70);
+    --card-foreground: oklch(0.28 0.03 50);
+    --popover: oklch(0.99 0.012 70);
+    --popover-foreground: oklch(0.28 0.03 50);
+    --primary: oklch(0.55 0.14 50);
+    --primary-foreground: oklch(0.98 0.01 70);
+    --secondary: oklch(0.92 0.03 70);
+    --secondary-foreground: oklch(0.3 0.03 50);
+    --muted: oklch(0.92 0.03 70);
+    --muted-foreground: oklch(0.5 0.03 55);
+    --accent: oklch(0.82 0.08 40);
+    --accent-foreground: oklch(0.3 0.07 40);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.87 0.03 65);
+    --input: oklch(0.87 0.03 65);
+    --ring: oklch(0.55 0.14 50);
+    --chart-1: oklch(0.7 0.12 50);
+    --chart-2: oklch(0.6 0.14 40);
+    --chart-3: oklch(0.5 0.12 60);
+    --chart-4: oklch(0.45 0.1 35);
+    --chart-5: oklch(0.35 0.08 45);
+    --sidebar: oklch(0.94 0.025 68);
+    --sidebar-foreground: oklch(0.28 0.03 50);
+    --sidebar-primary: oklch(0.55 0.14 50);
+    --sidebar-primary-foreground: oklch(0.98 0.01 70);
+    --sidebar-accent: oklch(0.82 0.08 40);
+    --sidebar-accent-foreground: oklch(0.3 0.07 40);
+    --sidebar-border: oklch(0.87 0.03 65);
+    --sidebar-ring: oklch(0.55 0.14 50);
+}
+
+/* October — Halloween. The one seasonal theme that goes dark rather than light,
+   for the spooky factor; still meets normal contrast, just inverted like the
+   existing Dark theme. */
+[data-theme='seasonal-halloween'] {
+    --background: oklch(0.16 0.02 280);
+    --foreground: oklch(0.92 0.01 60);
+    --card: oklch(0.22 0.025 280);
+    --card-foreground: oklch(0.92 0.01 60);
+    --popover: oklch(0.22 0.025 280);
+    --popover-foreground: oklch(0.92 0.01 60);
+    --primary: oklch(0.65 0.19 45);
+    --primary-foreground: oklch(0.15 0.02 40);
+    --secondary: oklch(0.3 0.04 280);
+    --secondary-foreground: oklch(0.9 0.01 60);
+    --muted: oklch(0.28 0.03 280);
+    --muted-foreground: oklch(0.65 0.02 280);
+    --accent: oklch(0.5 0.15 300);
+    --accent-foreground: oklch(0.95 0.01 300);
+    --destructive: oklch(0.6 0.22 25);
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 12%);
+    --ring: oklch(0.65 0.19 45);
+    --chart-1: oklch(0.65 0.19 45);
+    --chart-2: oklch(0.5 0.15 300);
+    --chart-3: oklch(0.4 0.05 280);
+    --chart-4: oklch(0.55 0.12 130);
+    --chart-5: oklch(0.35 0.02 280);
+    --sidebar: oklch(0.19 0.02 280);
+    --sidebar-foreground: oklch(0.92 0.01 60);
+    --sidebar-primary: oklch(0.65 0.19 45);
+    --sidebar-primary-foreground: oklch(0.15 0.02 40);
+    --sidebar-accent: oklch(0.5 0.15 300);
+    --sidebar-accent-foreground: oklch(0.95 0.01 300);
+    --sidebar-border: oklch(1 0 0 / 12%);
+    --sidebar-ring: oklch(0.65 0.19 45);
+}
+
+/* November — Thanksgiving: harvest browns and pumpkin orange. */
+[data-theme='seasonal-thanksgiving'] {
+    --background: oklch(0.95 0.02 55);
+    --foreground: oklch(0.26 0.03 40);
+    --card: oklch(0.98 0.015 55);
+    --card-foreground: oklch(0.26 0.03 40);
+    --popover: oklch(0.98 0.015 55);
+    --popover-foreground: oklch(0.26 0.03 40);
+    --primary: oklch(0.48 0.13 40);
+    --primary-foreground: oklch(0.98 0.01 55);
+    --secondary: oklch(0.9 0.04 60);
+    --secondary-foreground: oklch(0.28 0.03 40);
+    --muted: oklch(0.91 0.03 55);
+    --muted-foreground: oklch(0.48 0.03 45);
+    --accent: oklch(0.78 0.1 45);
+    --accent-foreground: oklch(0.28 0.08 40);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.85 0.03 55);
+    --input: oklch(0.85 0.03 55);
+    --ring: oklch(0.48 0.13 40);
+    --chart-1: oklch(0.6 0.13 40);
+    --chart-2: oklch(0.5 0.12 55);
+    --chart-3: oklch(0.65 0.1 70);
+    --chart-4: oklch(0.4 0.1 30);
+    --chart-5: oklch(0.35 0.08 45);
+    --sidebar: oklch(0.93 0.025 55);
+    --sidebar-foreground: oklch(0.26 0.03 40);
+    --sidebar-primary: oklch(0.48 0.13 40);
+    --sidebar-primary-foreground: oklch(0.98 0.01 55);
+    --sidebar-accent: oklch(0.78 0.1 45);
+    --sidebar-accent-foreground: oklch(0.28 0.08 40);
+    --sidebar-border: oklch(0.85 0.03 55);
+    --sidebar-ring: oklch(0.48 0.13 40);
+}
+
+/* December — Christmas: cream background, evergreen primary, festive red accent. */
+[data-theme='seasonal-christmas'] {
+    --background: oklch(0.97 0.01 90);
+    --foreground: oklch(0.22 0.03 150);
+    --card: oklch(0.995 0.008 90);
+    --card-foreground: oklch(0.22 0.03 150);
+    --popover: oklch(0.995 0.008 90);
+    --popover-foreground: oklch(0.22 0.03 150);
+    --primary: oklch(0.4 0.13 150);
+    --primary-foreground: oklch(0.98 0.01 90);
+    --secondary: oklch(0.9 0.03 90);
+    --secondary-foreground: oklch(0.25 0.03 150);
+    --muted: oklch(0.92 0.02 90);
+    --muted-foreground: oklch(0.5 0.02 130);
+    --accent: oklch(0.5 0.2 20);
+    --accent-foreground: oklch(0.98 0.01 20);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.87 0.02 90);
+    --input: oklch(0.87 0.02 90);
+    --ring: oklch(0.4 0.13 150);
+    --chart-1: oklch(0.5 0.2 20);
+    --chart-2: oklch(0.4 0.13 150);
+    --chart-3: oklch(0.75 0.1 85);
+    --chart-4: oklch(0.3 0.1 150);
+    --chart-5: oklch(0.35 0.15 20);
+    --sidebar: oklch(0.94 0.015 90);
+    --sidebar-foreground: oklch(0.22 0.03 150);
+    --sidebar-primary: oklch(0.4 0.13 150);
+    --sidebar-primary-foreground: oklch(0.98 0.01 90);
+    --sidebar-accent: oklch(0.5 0.2 20);
+    --sidebar-accent-foreground: oklch(0.98 0.01 20);
+    --sidebar-border: oklch(0.87 0.02 90);
+    --sidebar-ring: oklch(0.4 0.13 150);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -221,6 +616,64 @@
 /* TV mode is a larger, more distant viewport (docs/UI.md: readable at ~10 feet). */
 [data-display-mode='tv'] {
   font-size: 1.35rem;
+}
+
+/* HolidayAnimationOverlay's drifting emoji particles — falling ones start above the
+   viewport and drift down past it, rising ones (hearts, fireworks) start below and
+   drift up past it. Both fade in/out at the edges of their cycle so nothing pops in
+   or out abruptly. Automatically frozen by the prefers-reduced-motion block below,
+   same as every other animation in the app. */
+.holiday-particle-fall,
+.holiday-particle-rise {
+  position: fixed;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.holiday-particle-fall {
+  top: -10vh;
+  animation-name: holiday-particle-fall;
+}
+
+.holiday-particle-rise {
+  bottom: -10vh;
+  animation-name: holiday-particle-rise;
+}
+
+@keyframes holiday-particle-fall {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(20px, 120vh);
+    opacity: 0;
+  }
+}
+
+@keyframes holiday-particle-rise {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-20px, -120vh);
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

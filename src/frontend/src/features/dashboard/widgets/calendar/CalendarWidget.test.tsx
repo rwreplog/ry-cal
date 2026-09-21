@@ -20,7 +20,16 @@ function dashboardWith(overrides: {
     layout: [],
     calendar: { events: overrides.events ?? [] },
     chores: { items: overrides.chores ?? [] },
-    weather: { current: { temperatureF: 70, condition: 'Clear', highF: 75, lowF: 60 } },
+    weather: {
+      current: {
+        temperatureF: 70,
+        condition: 'Clear',
+        highF: 75,
+        lowF: 60,
+        inclementWeatherExpected: false,
+        forecastCondition: 'Clear',
+      },
+    },
     announcements: { items: [] },
     meals: { items: overrides.meals ?? [] },
     shoppingList: { items: [], totalUncheckedCount: 0 },
