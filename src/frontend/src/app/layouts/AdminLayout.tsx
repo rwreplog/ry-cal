@@ -41,8 +41,17 @@ export function AdminLayout() {
 
       {/* Fixed-width, horizontally-scrollable items — at 9 tabs, evenly-spaced
           flex-1 items would be illegibly cramped on a phone. Native touch-scroll
-          momentum keeps every tab a legible, consistent size regardless of count. */}
-      <nav className="bg-background/95 fixed inset-x-0 bottom-0 mx-auto flex max-w-2xl overflow-x-auto border-t backdrop-blur">
+          momentum keeps every tab a legible, consistent size regardless of count.
+          The mask fades both edges so it's visually obvious the bar scrolls even
+          before anyone tries swiping it — without it, tabs past the fold (5+ of
+          the 9 here) were easy to never discover. */}
+      <nav
+        className="bg-background/95 fixed inset-x-0 bottom-0 mx-auto flex max-w-2xl overflow-x-auto border-t backdrop-blur"
+        style={{
+          maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
+        }}
+      >
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}

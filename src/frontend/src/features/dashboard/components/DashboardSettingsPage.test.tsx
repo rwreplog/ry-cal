@@ -143,4 +143,25 @@ describe('DashboardSettingsPage', () => {
 
     expect(screen.getByRole('combobox', { name: /theme/i })).toHaveTextContent('Modern')
   })
+
+  it('shows which seasonal palette is active when the theme is "Auto (Seasonal)"', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 9, 31)) // Halloween
+    mockedUseDashboardConfig.mockReturnValue({
+      data: { ...baseConfig, theme: 'auto' },
+      isLoading: false,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    render(<DashboardSettingsPage />)
+
+    expect(screen.getByText(/showing halloween today/i)).toBeInTheDocument()
+    vi.useRealTimers()
+  })
+
+  it('omits the seasonal-palette caption for a non-auto theme', () => {
+    render(<DashboardSettingsPage />)
+
+    expect(screen.queryByText(/showing .* today/i)).not.toBeInTheDocument()
+  })
 })

@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useCountdownMutations } from '@/features/countdowns/hooks/useCountdownMutations'
 import type { CountdownDto } from '@/types/countdowns'
 import { CountdownForm } from './CountdownForm'
@@ -36,9 +37,15 @@ export function CountdownListItem({ countdown }: { countdown: CountdownDto }) {
         <p className="text-muted-foreground text-sm">{formatDate(countdown.targetDate)}</p>
       </button>
 
-      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${countdown.label}`} onClick={() => remove.mutate(countdown.id)} disabled={remove.isPending}>
-        <Trash2 className="size-4" />
-      </Button>
+      <DeleteConfirmDialog
+        trigger={
+          <Button variant="ghost" size="icon-sm" aria-label={`Delete ${countdown.label}`} disabled={remove.isPending}>
+            <Trash2 className="size-4" />
+          </Button>
+        }
+        title={`Delete "${countdown.label}"?`}
+        onConfirm={() => remove.mutate(countdown.id)}
+      />
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent side="bottom">

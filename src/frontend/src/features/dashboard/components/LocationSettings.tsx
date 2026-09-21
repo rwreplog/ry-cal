@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Search } from 'lucide-react'
+import { Loader2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { searchLocations } from '@/services/api/dashboardApi'
@@ -19,6 +19,9 @@ export function LocationSettings() {
   const [results, setResults] = useState<GeocodingResultDto[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState(false)
+  // Distinguishes "haven't searched yet" from "searched and found nothing" — both
+  // leave `results` empty, but only the latter should show a "no matches" message.
+  const [hasSearched, setHasSearched] = useState(false)
 
   async function handleSearch(event: FormEvent) {
     event.preventDefault()
@@ -29,6 +32,7 @@ export function LocationSettings() {
     try {
       const found = await searchLocations(query.trim())
       setResults(found)
+      setHasSearched(true)
     } catch {
       setSearchError(true)
     } finally {
@@ -42,6 +46,7 @@ export function LocationSettings() {
       { onSuccess: () => setResults([]) },
     )
     setQuery('')
+    setHasSearched(false)
   }
 
   return (
@@ -52,13 +57,25 @@ export function LocationSettings() {
       </p>
 
       <form onSubmit={handleSearch} className="flex gap-2">
-        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search for a city" aria-label="Search for a city" />
+        <Input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setHasSearched(false)
+          }}
+          placeholder="Search for a city"
+          aria-label="Search for a city"
+        />
         <Button type="submit" size="icon" variant="outline" disabled={!query.trim() || isSearching} aria-label="Search">
-          <Search className="size-4" />
+          {isSearching ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
         </Button>
       </form>
 
       {searchError && <p className="text-destructive text-sm">Couldn&apos;t search right now. Try again.</p>}
+
+      {!isSearching && !searchError && hasSearched && results.length === 0 && (
+        <p className="text-muted-foreground text-sm">No cities found for &quot;{query || 'that search'}&quot;.</p>
+      )}
 
       {results.length > 0 && (
         <div className="flex flex-col gap-1 rounded-2xl border p-2">

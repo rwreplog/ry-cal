@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useChoreMutations } from '@/features/chores/hooks/useChoreMutations'
 import { useFamilyMembers } from '@/features/family/hooks/useFamilyMembers'
 import type { ChoreDto } from '@/types/chores'
@@ -70,9 +71,15 @@ export function ChoreListItem({ chore }: { chore: ChoreDto }) {
         </SelectContent>
       </Select>
 
-      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${chore.title}`} onClick={() => remove.mutate(chore.id)} disabled={remove.isPending}>
-        <Trash2 className="size-4" />
-      </Button>
+      <DeleteConfirmDialog
+        trigger={
+          <Button variant="ghost" size="icon-sm" aria-label={`Delete ${chore.title}`} disabled={remove.isPending}>
+            <Trash2 className="size-4" />
+          </Button>
+        }
+        title={`Delete "${chore.title}"?`}
+        onConfirm={() => remove.mutate(chore.id)}
+      />
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent side="bottom">

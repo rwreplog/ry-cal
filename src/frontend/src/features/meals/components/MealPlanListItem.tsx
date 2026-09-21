@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useMealMutations } from '@/features/meals/hooks/useMealMutations'
 import type { MealPlanEntryDto } from '@/types/meals'
 import { MealPlanForm } from './MealPlanForm'
@@ -23,9 +24,15 @@ export function MealPlanListItem({ meal, takenDates }: { meal: MealPlanEntryDto;
         {meal.description && <p className="text-muted-foreground mt-1 text-sm">{meal.description}</p>}
       </button>
 
-      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${meal.name}`} onClick={() => remove.mutate(meal.id)} disabled={remove.isPending}>
-        <Trash2 className="size-4" />
-      </Button>
+      <DeleteConfirmDialog
+        trigger={
+          <Button variant="ghost" size="icon-sm" aria-label={`Delete ${meal.name}`} disabled={remove.isPending}>
+            <Trash2 className="size-4" />
+          </Button>
+        }
+        title={`Delete "${meal.name}"?`}
+        onConfirm={() => remove.mutate(meal.id)}
+      />
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent side="bottom">

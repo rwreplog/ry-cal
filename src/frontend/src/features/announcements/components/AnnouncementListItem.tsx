@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useAnnouncementMutations } from '@/features/announcements/hooks/useAnnouncementMutations'
 import type { AnnouncementDto } from '@/types/announcements'
 import { AnnouncementForm } from './AnnouncementForm'
@@ -17,15 +18,15 @@ export function AnnouncementListItem({ announcement }: { announcement: Announcem
         {announcement.postedBy && <p className="text-muted-foreground mt-1 text-sm">— {announcement.postedBy}</p>}
       </button>
 
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label="Delete announcement"
-        onClick={() => remove.mutate(announcement.id)}
-        disabled={remove.isPending}
-      >
-        <Trash2 className="size-4" />
-      </Button>
+      <DeleteConfirmDialog
+        trigger={
+          <Button variant="ghost" size="icon-sm" aria-label="Delete announcement" disabled={remove.isPending}>
+            <Trash2 className="size-4" />
+          </Button>
+        }
+        title="Delete this announcement?"
+        onConfirm={() => remove.mutate(announcement.id)}
+      />
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent side="bottom">

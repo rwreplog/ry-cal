@@ -31,3 +31,25 @@ export const AUTO_SEASONAL_THEME_ID = 'auto'
 export function getEffectiveTheme(theme: string, today: Date = new Date()): string {
   return theme === AUTO_SEASONAL_THEME_ID ? resolveSeasonalTheme(today) : theme
 }
+
+// Friendly names for resolveSeasonalTheme's ids — used only to tell the household
+// which palette Auto has picked for today (DashboardSettingsPage), since selecting
+// "Auto (Seasonal)" otherwise gives no clue which of the 11 it resolved to without
+// visually comparing the page's colors against memory.
+const SEASONAL_THEME_LABELS: Record<string, string> = {
+  'seasonal-winter': 'Winter',
+  'seasonal-valentines': "Valentine's Day",
+  'seasonal-st-patricks': "St Patrick's Day",
+  'seasonal-easter': 'Easter',
+  'seasonal-spring': 'Spring',
+  'seasonal-summer': 'Summer',
+  'seasonal-fourth-of-july': 'Fourth of July',
+  'seasonal-fall': 'Fall',
+  'seasonal-halloween': 'Halloween',
+  'seasonal-thanksgiving': 'Thanksgiving',
+  'seasonal-christmas': 'Christmas',
+}
+
+export function seasonalThemeLabel(resolvedThemeId: string): string {
+  return SEASONAL_THEME_LABELS[resolvedThemeId] ?? resolvedThemeId
+}

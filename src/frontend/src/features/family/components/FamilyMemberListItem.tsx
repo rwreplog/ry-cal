@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useFamilyMemberMutations } from '@/features/family/hooks/useFamilyMemberMutations'
 import type { FamilyMemberDto } from '@/types/family'
 import { FamilyMemberForm } from './FamilyMemberForm'
@@ -23,15 +24,17 @@ export function FamilyMemberListItem({ member }: { member: FamilyMemberDto }) {
         {member.name}
       </button>
 
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={`Remove ${member.name}`}
-        onClick={() => remove.mutate(member.id)}
-        disabled={remove.isPending}
-      >
-        <Trash2 className="size-4" />
-      </Button>
+      <DeleteConfirmDialog
+        trigger={
+          <Button variant="ghost" size="icon-sm" aria-label={`Remove ${member.name}`} disabled={remove.isPending}>
+            <Trash2 className="size-4" />
+          </Button>
+        }
+        title={`Remove ${member.name}?`}
+        description="Their assigned chores will become unassigned. This can't be undone."
+        confirmLabel="Remove"
+        onConfirm={() => remove.mutate(member.id)}
+      />
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent side="bottom">

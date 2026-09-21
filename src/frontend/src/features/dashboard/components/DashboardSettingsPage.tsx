@@ -23,7 +23,7 @@ import { Switch } from '@/components/ui/switch'
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { useDashboardConfigMutations } from '@/features/dashboard/hooks/useDashboardConfigMutations'
 import { getWidget } from '@/features/dashboard/registry/widgetRegistry'
-import { THEMES, getEffectiveTheme } from '@/features/theme/constants'
+import { AUTO_SEASONAL_THEME_ID, THEMES, getEffectiveTheme, seasonalThemeLabel } from '@/features/theme/constants'
 import { cn } from '@/lib/utils'
 import type { DashboardWidgetConfigDto } from '@/types/dashboard'
 import { LocationSettings } from './LocationSettings'
@@ -128,6 +128,9 @@ export function DashboardSettingsPage() {
             ))}
           </SelectContent>
         </Select>
+        {theme === AUTO_SEASONAL_THEME_ID && (
+          <p className="text-muted-foreground text-sm">Showing {seasonalThemeLabel(getEffectiveTheme(theme))} today.</p>
+        )}
       </section>
 
       <section className="flex flex-col gap-2">
@@ -149,9 +152,14 @@ export function DashboardSettingsPage() {
         </DndContext>
       </section>
 
-      <Button onClick={handleSave} disabled={update.isPending}>
-        {update.isPending ? 'Saving…' : 'Save changes'}
-      </Button>
+      {/* Sticky just above AdminLayout's fixed bottom nav (which reserves 5rem via
+          pb-20 on the page shell) — with 7+ widgets in the list above, this used to
+          require scrolling all the way down to find after making a change. */}
+      <div className="bg-background sticky bottom-20 -mx-4 border-t px-4 py-3">
+        <Button onClick={handleSave} disabled={update.isPending} className="w-full">
+          {update.isPending ? 'Saving…' : 'Save changes'}
+        </Button>
+      </div>
     </div>
   )
 }

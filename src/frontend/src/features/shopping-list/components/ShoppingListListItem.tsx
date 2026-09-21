@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CheckCircle2, Circle, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useShoppingListMutations } from '@/features/shopping-list/hooks/useShoppingListMutations'
 import type { ShoppingListItemDto } from '@/types/shoppingList'
 import { ShoppingListItemForm } from './ShoppingListItemForm'
@@ -33,9 +34,15 @@ export function ShoppingListListItem({ item }: { item: ShoppingListItemDto }) {
         {item.name}
       </button>
 
-      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${item.name}`} onClick={() => remove.mutate(item.id)} disabled={remove.isPending}>
-        <Trash2 className="size-4" />
-      </Button>
+      <DeleteConfirmDialog
+        trigger={
+          <Button variant="ghost" size="icon-sm" aria-label={`Delete ${item.name}`} disabled={remove.isPending}>
+            <Trash2 className="size-4" />
+          </Button>
+        }
+        title={`Delete "${item.name}"?`}
+        onConfirm={() => remove.mutate(item.id)}
+      />
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent side="bottom">

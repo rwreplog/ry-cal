@@ -72,7 +72,16 @@ export function CalendarWidget() {
         {isLoading && (
           <div className="grid grid-cols-7 gap-2">
             {Array.from({ length: 7 }).map((_, i) => (
-              <Skeleton key={i} className="h-40 w-full" />
+              // Segmented to roughly match the real header/events/dinner/chores
+              // shape, not one flat block — the real content is noticeably taller
+              // than a single small block, which made the card visibly jump in
+              // height the instant data arrived.
+              <div key={i} className="flex flex-col gap-2">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </div>
             ))}
           </div>
         )}

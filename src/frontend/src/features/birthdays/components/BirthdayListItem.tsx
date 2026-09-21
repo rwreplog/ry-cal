@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useBirthdayMutations } from '@/features/birthdays/hooks/useBirthdayMutations'
 import type { BirthdayDto } from '@/types/birthdays'
 import { BirthdayForm } from './BirthdayForm'
@@ -27,9 +28,15 @@ export function BirthdayListItem({ birthday }: { birthday: BirthdayDto }) {
         <p className="text-muted-foreground text-sm">{formatBirthday(birthday.date)}</p>
       </button>
 
-      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${birthday.name}`} onClick={() => remove.mutate(birthday.id)} disabled={remove.isPending}>
-        <Trash2 className="size-4" />
-      </Button>
+      <DeleteConfirmDialog
+        trigger={
+          <Button variant="ghost" size="icon-sm" aria-label={`Delete ${birthday.name}`} disabled={remove.isPending}>
+            <Trash2 className="size-4" />
+          </Button>
+        }
+        title={`Delete ${birthday.name}'s birthday?`}
+        onConfirm={() => remove.mutate(birthday.id)}
+      />
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent side="bottom">
