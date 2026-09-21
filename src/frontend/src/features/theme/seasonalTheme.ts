@@ -61,7 +61,7 @@ function isSameCalendarDay(a: Date, b: Date): boolean {
 }
 
 // The exact calendar date of Thanksgiving: the 4th Thursday of November.
-function computeThanksgiving(year: number): Date {
+export function computeThanksgiving(year: number): Date {
   const nov1 = new Date(year, 10, 1)
   const THURSDAY = 4
   const daysToFirstThursday = (THURSDAY - nov1.getDay() + 7) % 7
@@ -87,6 +87,29 @@ export function getHolidayToday(date: Date): HolidayId | null {
   if (month === 11 && dayOfMonth === 25) return 'christmas'
 
   return null
+}
+
+// Which of the 7 exact-day holidays (if any) a seasonal theme id represents — a
+// direct, date-independent mapping, deliberately not derived from a "preview date"
+// run back through getHolidayToday: a fixed preview date picked to land in, say,
+// St Patrick's Day's month could accidentally fall inside a given year's Easter
+// window (Easter's practical range reaches into mid-to-late March), silently
+// showing Easter's animation while claiming to preview St Patrick's. This mapping
+// can't drift out of sync with what it's naming. Backs DashboardSettingsPage's
+// preview picker together with SEASONAL_THEMES (features/theme/constants.ts) for
+// the palette half and this for the "does it also get particles" half.
+const SEASONAL_THEME_HOLIDAYS: Partial<Record<string, HolidayId>> = {
+  'seasonal-valentines': 'valentines',
+  'seasonal-st-patricks': 'st-patricks',
+  'seasonal-easter': 'easter',
+  'seasonal-fourth-of-july': 'fourth-of-july',
+  'seasonal-halloween': 'halloween',
+  'seasonal-thanksgiving': 'thanksgiving',
+  'seasonal-christmas': 'christmas',
+}
+
+export function holidayForSeasonalTheme(seasonalThemeId: string): HolidayId | null {
+  return SEASONAL_THEME_HOLIDAYS[seasonalThemeId] ?? null
 }
 
 // Meeus/Jones/Butcher Gregorian algorithm for the date of Easter Sunday — the

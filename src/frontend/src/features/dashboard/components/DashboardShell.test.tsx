@@ -3,14 +3,17 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
+import { PreviewThemeProvider } from '@/features/theme/PreviewThemeContext'
 import type { DashboardDto } from '@/types/dashboard'
 import { DashboardShell } from './DashboardShell'
 
 function renderShell() {
   return render(
-    <MemoryRouter>
-      <DashboardShell />
-    </MemoryRouter>,
+    <PreviewThemeProvider>
+      <MemoryRouter>
+        <DashboardShell />
+      </MemoryRouter>
+    </PreviewThemeProvider>,
   )
 }
 

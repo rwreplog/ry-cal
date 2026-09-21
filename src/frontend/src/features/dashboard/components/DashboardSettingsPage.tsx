@@ -23,7 +23,8 @@ import { Switch } from '@/components/ui/switch'
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { useDashboardConfigMutations } from '@/features/dashboard/hooks/useDashboardConfigMutations'
 import { getWidget } from '@/features/dashboard/registry/widgetRegistry'
-import { AUTO_SEASONAL_THEME_ID, THEMES, getEffectiveTheme, seasonalThemeLabel } from '@/features/theme/constants'
+import { AUTO_SEASONAL_THEME_ID, SEASONAL_THEMES, THEMES, getEffectiveTheme, seasonalThemeLabel } from '@/features/theme/constants'
+import { usePreviewTheme } from '@/features/theme/PreviewThemeContext'
 import { cn } from '@/lib/utils'
 import type { DashboardWidgetConfigDto } from '@/types/dashboard'
 import { LocationSettings } from './LocationSettings'
@@ -58,6 +59,7 @@ export function reorderWidgets(
 export function DashboardSettingsPage() {
   const { data, isLoading } = useDashboardConfig()
   const { update } = useDashboardConfigMutations()
+  const { previewThemeId, setPreviewThemeId } = usePreviewTheme()
 
   // Seeded once from the server (staleTime: Infinity on useDashboardConfig means
   // this effect never fires again from a background refetch, so it can't clobber
@@ -73,6 +75,12 @@ export function DashboardSettingsPage() {
       setSeeded(true)
     }
   }, [data, seeded])
+
+  // Leaving the page always clears an active preview — it's meant to be a quick
+  // look, not something that lingers app-wide after navigating away.
+  useEffect(() => {
+    return () => setPreviewThemeId(null)
+  }, [setPreviewThemeId])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -95,6 +103,7 @@ export function DashboardSettingsPage() {
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme)
+    setPreviewThemeId(null) // a real selection wins over a leftover preview
     // Instant preview, no reload — resolved the same way ThemeProvider resolves it
     // on every other page, so picking "Auto (Seasonal)" previews today's actual
     // holiday palette rather than literally applying the unstyled "auto" id.
@@ -131,6 +140,33 @@ export function DashboardSettingsPage() {
         {theme === AUTO_SEASONAL_THEME_ID && (
           <p className="text-muted-foreground text-sm">Showing {seasonalThemeLabel(getEffectiveTheme(theme))} today.</p>
         )}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">Preview a season or holiday</h2>
+        <p className="text-muted-foreground text-sm">
+          See what any of Auto&apos;s palettes looks like right now, without waiting for the date. This is just a look —
+          it doesn&apos;t change or save your actual theme, and clears when you leave this page.
+        </p>
+        <div className="flex gap-2">
+          <Select value={previewThemeId ?? undefined} onValueChange={setPreviewThemeId}>
+            <SelectTrigger aria-label="Preview a season or holiday" className="w-full">
+              <SelectValue placeholder="Choose one to preview" />
+            </SelectTrigger>
+            <SelectContent>
+              {SEASONAL_THEMES.map((t) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {previewThemeId && (
+            <Button type="button" variant="outline" onClick={() => setPreviewThemeId(null)}>
+              Stop previewing
+            </Button>
+          )}
+        </div>
       </section>
 
       <section className="flex flex-col gap-2">

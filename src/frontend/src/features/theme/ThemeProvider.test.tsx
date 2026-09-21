@@ -1,6 +1,8 @@
 import { act, render } from '@testing-library/react'
+import { useEffect } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
+import { PreviewThemeProvider, usePreviewTheme } from './PreviewThemeContext'
 import { ThemeProvider } from './ThemeProvider'
 
 vi.mock('@/features/dashboard/hooks/useDashboardConfig', () => ({
@@ -8,6 +10,24 @@ vi.mock('@/features/dashboard/hooks/useDashboardConfig', () => ({
 }))
 
 const mockedUseDashboardConfig = vi.mocked(useDashboardConfig)
+
+function renderThemeProvider() {
+  return render(
+    <PreviewThemeProvider>
+      <ThemeProvider>content</ThemeProvider>
+    </PreviewThemeProvider>,
+  )
+}
+
+// Drives the preview context from outside, the way DashboardSettingsPage does, so
+// tests can exercise ThemeProvider's response to a preview override.
+function SetPreviewOnMount({ id }: { id: string }) {
+  const { setPreviewThemeId } = usePreviewTheme()
+  useEffect(() => {
+    setPreviewThemeId(id)
+  }, [id, setPreviewThemeId])
+  return null
+}
 
 describe('ThemeProvider', () => {
   beforeEach(() => {
@@ -27,7 +47,7 @@ describe('ThemeProvider', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    render(<ThemeProvider>content</ThemeProvider>)
+    renderThemeProvider()
 
     expect(document.documentElement.dataset.theme).toBe('family')
   })
@@ -39,7 +59,7 @@ describe('ThemeProvider', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    render(<ThemeProvider>content</ThemeProvider>)
+    renderThemeProvider()
 
     expect(document.documentElement.dataset.theme).toBe('seasonal-halloween')
   })
@@ -51,7 +71,7 @@ describe('ThemeProvider', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    render(<ThemeProvider>content</ThemeProvider>)
+    renderThemeProvider()
     expect(document.documentElement.dataset.theme).toBe('seasonal-halloween')
 
     // Cross midnight into November 1st — a kiosk left open overnight should pick
@@ -62,5 +82,38 @@ describe('ThemeProvider', () => {
     })
 
     expect(document.documentElement.dataset.theme).toBe('seasonal-thanksgiving')
+  })
+
+  it('applies an active preview theme instead of the real saved theme', () => {
+    mockedUseDashboardConfig.mockReturnValue({
+      data: { theme: 'family', widgets: [] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    render(
+      <PreviewThemeProvider>
+        <SetPreviewOnMount id="seasonal-christmas" />
+        <ThemeProvider>content</ThemeProvider>
+      </PreviewThemeProvider>,
+    )
+
+    expect(document.documentElement.dataset.theme).toBe('seasonal-christmas')
+  })
+
+  it('never caches a preview override to localStorage', () => {
+    mockedUseDashboardConfig.mockReturnValue({
+      data: { theme: 'family', widgets: [] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    render(
+      <PreviewThemeProvider>
+        <SetPreviewOnMount id="seasonal-christmas" />
+        <ThemeProvider>content</ThemeProvider>
+      </PreviewThemeProvider>,
+    )
+
+    expect(document.documentElement.dataset.theme).toBe('seasonal-christmas')
+    expect(localStorage.getItem('rhq-theme')).toBe('family')
   })
 })

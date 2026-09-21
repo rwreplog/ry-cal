@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { AUTO_SEASONAL_THEME_ID } from './constants'
-import { getHolidayToday, type HolidayId } from './seasonalTheme'
+import { usePreviewTheme } from './PreviewThemeContext'
+import { getHolidayToday, holidayForSeasonalTheme, type HolidayId } from './seasonalTheme'
 
 interface HolidayAnimationConfig {
   emojis: string[]
@@ -48,11 +49,13 @@ function buildParticles(config: HolidayAnimationConfig): Particle[] {
 
 // Purely decorative — not a widget, mounted once at the dashboard page level. Only
 // active when the household has selected "Auto (Seasonal)"; a manually-picked
-// theme (e.g. Dark) never gets surprise holiday particles layered over it.
-// prefers-reduced-motion is handled globally in index.css, same as every other
-// animation in the app.
+// theme (e.g. Dark) never gets surprise holiday particles layered over it — unless
+// Dashboard Settings has an active preview, which overrides that the same way it
+// overrides the color palette. prefers-reduced-motion is handled globally in
+// index.css, same as every other animation in the app.
 export function HolidayAnimationOverlay() {
   const { data } = useDashboardConfig()
+  const { previewThemeId } = usePreviewTheme()
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -60,7 +63,11 @@ export function HolidayAnimationOverlay() {
     return () => clearInterval(id)
   }, [])
 
-  const holiday = data?.theme === AUTO_SEASONAL_THEME_ID ? getHolidayToday(now) : null
+  const holiday = previewThemeId
+    ? holidayForSeasonalTheme(previewThemeId)
+    : data?.theme === AUTO_SEASONAL_THEME_ID
+      ? getHolidayToday(now)
+      : null
   const particles = useMemo(() => (holiday ? buildParticles(HOLIDAY_ANIMATIONS[holiday]) : []), [holiday])
 
   if (!holiday) {

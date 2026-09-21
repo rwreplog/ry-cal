@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeEasterSunday, getHolidayToday, resolveSeasonalTheme } from './seasonalTheme'
+import { computeEasterSunday, getHolidayToday, holidayForSeasonalTheme, resolveSeasonalTheme } from './seasonalTheme'
 
 describe('computeEasterSunday', () => {
   // Well-known published Easter Sunday dates, spanning both March and April
@@ -81,5 +81,26 @@ describe('getHolidayToday', () => {
   it('does not recognize a day right next to Thanksgiving as Thanksgiving itself', () => {
     expect(getHolidayToday(new Date(2026, 10, 25))).toBeNull()
     expect(getHolidayToday(new Date(2026, 10, 27))).toBeNull()
+  })
+})
+
+describe('holidayForSeasonalTheme', () => {
+  it.each([
+    ['seasonal-valentines', 'valentines'],
+    ['seasonal-st-patricks', 'st-patricks'],
+    ['seasonal-easter', 'easter'],
+    ['seasonal-fourth-of-july', 'fourth-of-july'],
+    ['seasonal-halloween', 'halloween'],
+    ['seasonal-thanksgiving', 'thanksgiving'],
+    ['seasonal-christmas', 'christmas'],
+  ])('maps %s to the %s holiday', (seasonalThemeId, expected) => {
+    expect(holidayForSeasonalTheme(seasonalThemeId)).toBe(expected)
+  })
+
+  it('returns null for a generic season with no exact holiday day', () => {
+    expect(holidayForSeasonalTheme('seasonal-winter')).toBeNull()
+    expect(holidayForSeasonalTheme('seasonal-spring')).toBeNull()
+    expect(holidayForSeasonalTheme('seasonal-summer')).toBeNull()
+    expect(holidayForSeasonalTheme('seasonal-fall')).toBeNull()
   })
 })

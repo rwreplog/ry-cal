@@ -32,24 +32,32 @@ export function getEffectiveTheme(theme: string, today: Date = new Date()): stri
   return theme === AUTO_SEASONAL_THEME_ID ? resolveSeasonalTheme(today) : theme
 }
 
-// Friendly names for resolveSeasonalTheme's ids — used only to tell the household
+// Every id resolveSeasonalTheme can return, in calendar order — the single source
+// for both the friendly-name lookup below and DashboardSettingsPage's "Preview a
+// season" picker (letting the household see, say, Halloween's look in July without
+// waiting for October or changing their system clock).
+export const SEASONAL_THEMES: readonly ThemeDefinition[] = [
+  { id: 'seasonal-winter', label: 'Winter (Jan)' },
+  { id: 'seasonal-valentines', label: "Valentine's Day (Feb)" },
+  { id: 'seasonal-st-patricks', label: "St Patrick's Day (Mar)" },
+  { id: 'seasonal-easter', label: 'Easter' },
+  { id: 'seasonal-spring', label: 'Spring (Apr–May)' },
+  { id: 'seasonal-summer', label: 'Summer (Jun, Aug)' },
+  { id: 'seasonal-fourth-of-july', label: 'Fourth of July' },
+  { id: 'seasonal-fall', label: 'Fall (Sep)' },
+  { id: 'seasonal-halloween', label: 'Halloween' },
+  { id: 'seasonal-thanksgiving', label: 'Thanksgiving' },
+  { id: 'seasonal-christmas', label: 'Christmas' },
+]
+
+const SEASONAL_THEME_LABELS: Record<string, string> = Object.fromEntries(
+  SEASONAL_THEMES.map((t) => [t.id, t.label.replace(/\s*\([^)]*\)$/, '')]), // strip the "(Month)" suffix
+)
+
+// Friendly name for one of resolveSeasonalTheme's ids — used to tell the household
 // which palette Auto has picked for today (DashboardSettingsPage), since selecting
 // "Auto (Seasonal)" otherwise gives no clue which of the 11 it resolved to without
 // visually comparing the page's colors against memory.
-const SEASONAL_THEME_LABELS: Record<string, string> = {
-  'seasonal-winter': 'Winter',
-  'seasonal-valentines': "Valentine's Day",
-  'seasonal-st-patricks': "St Patrick's Day",
-  'seasonal-easter': 'Easter',
-  'seasonal-spring': 'Spring',
-  'seasonal-summer': 'Summer',
-  'seasonal-fourth-of-july': 'Fourth of July',
-  'seasonal-fall': 'Fall',
-  'seasonal-halloween': 'Halloween',
-  'seasonal-thanksgiving': 'Thanksgiving',
-  'seasonal-christmas': 'Christmas',
-}
-
 export function seasonalThemeLabel(resolvedThemeId: string): string {
   return SEASONAL_THEME_LABELS[resolvedThemeId] ?? resolvedThemeId
 }

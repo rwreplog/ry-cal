@@ -1,14 +1,41 @@
 import { render } from '@testing-library/react'
-import { act } from 'react'
+import { act, useEffect } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { HolidayAnimationOverlay } from './HolidayAnimationOverlay'
+import { PreviewThemeProvider, usePreviewTheme } from './PreviewThemeContext'
 
 vi.mock('@/features/dashboard/hooks/useDashboardConfig', () => ({
   useDashboardConfig: vi.fn(),
 }))
 
 const mockedUseDashboardConfig = vi.mocked(useDashboardConfig)
+
+function renderOverlay() {
+  return render(
+    <PreviewThemeProvider>
+      <HolidayAnimationOverlay />
+    </PreviewThemeProvider>,
+  )
+}
+
+// Drives the preview context from outside, the way DashboardSettingsPage does.
+function SetPreviewOnMount({ id }: { id: string }) {
+  const { setPreviewThemeId } = usePreviewTheme()
+  useEffect(() => {
+    setPreviewThemeId(id)
+  }, [id, setPreviewThemeId])
+  return null
+}
+
+function renderOverlayWithPreview(id: string) {
+  return render(
+    <PreviewThemeProvider>
+      <SetPreviewOnMount id={id} />
+      <HolidayAnimationOverlay />
+    </PreviewThemeProvider>,
+  )
+}
 
 describe('HolidayAnimationOverlay', () => {
   beforeEach(() => {
@@ -27,7 +54,7 @@ describe('HolidayAnimationOverlay', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    const { container } = render(<HolidayAnimationOverlay />)
+    const { container } = renderOverlay()
 
     expect(container).toBeEmptyDOMElement()
   })
@@ -39,7 +66,7 @@ describe('HolidayAnimationOverlay', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    const { container } = render(<HolidayAnimationOverlay />)
+    const { container } = renderOverlay()
 
     const particles = container.querySelectorAll('.holiday-particle-fall')
     expect(particles.length).toBeGreaterThan(0)
@@ -53,7 +80,7 @@ describe('HolidayAnimationOverlay', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    const { container } = render(<HolidayAnimationOverlay />)
+    const { container } = renderOverlay()
 
     expect(container.querySelectorAll('.holiday-particle-rise').length).toBeGreaterThan(0)
   })
@@ -65,7 +92,7 @@ describe('HolidayAnimationOverlay', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    const { container } = render(<HolidayAnimationOverlay />)
+    const { container } = renderOverlay()
 
     expect(container).toBeEmptyDOMElement()
   })
@@ -77,7 +104,7 @@ describe('HolidayAnimationOverlay', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    const { container } = render(<HolidayAnimationOverlay />)
+    const { container } = renderOverlay()
     expect(container).toBeEmptyDOMElement()
 
     vi.setSystemTime(new Date(2026, 11, 25, 0, 30)) // just past midnight, Christmas Day
@@ -86,5 +113,30 @@ describe('HolidayAnimationOverlay', () => {
     })
 
     expect(container.querySelectorAll('.holiday-particle-fall').length).toBeGreaterThan(0)
+  })
+
+  it('shows a holiday\'s particles when previewing it, regardless of today\'s real date or saved theme', () => {
+    vi.setSystemTime(new Date(2026, 5, 15)) // mid-June, nowhere near Halloween
+    mockedUseDashboardConfig.mockReturnValue({
+      data: { theme: 'family', widgets: [] }, // not even Auto
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    const { container } = renderOverlayWithPreview('seasonal-halloween')
+
+    expect(container.querySelectorAll('.holiday-particle-fall').length).toBeGreaterThan(0)
+  })
+
+  it('shows no particles when previewing a generic season with no exact holiday day', () => {
+    vi.setSystemTime(new Date(2026, 9, 31)) // Halloween, for real
+    mockedUseDashboardConfig.mockReturnValue({
+      data: { theme: 'auto', widgets: [] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    const { container } = renderOverlayWithPreview('seasonal-summer')
+
+    // The preview (Summer, no holiday) overrides what today would otherwise show.
+    expect(container).toBeEmptyDOMElement()
   })
 })

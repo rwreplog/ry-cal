@@ -1,11 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useEffect } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/features/dashboard/widgets' // registers the real widget definitions (name/icon lookups)
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { useDashboardConfigMutations } from '@/features/dashboard/hooks/useDashboardConfigMutations'
 import { useHouseholdLocation } from '@/features/dashboard/hooks/useHouseholdLocation'
 import { useHouseholdLocationMutations } from '@/features/dashboard/hooks/useHouseholdLocationMutations'
+import { PreviewThemeProvider, usePreviewTheme } from '@/features/theme/PreviewThemeContext'
 import type { DashboardConfigDto } from '@/types/dashboard'
 import { DashboardSettingsPage, reorderWidgets } from './DashboardSettingsPage'
 
@@ -42,6 +44,41 @@ const baseConfig: DashboardConfigDto = {
   ],
 }
 
+function renderPage() {
+  return render(
+    <PreviewThemeProvider>
+      <DashboardSettingsPage />
+    </PreviewThemeProvider>,
+  )
+}
+
+// Actually opening a Radix Select in jsdom (a pointerdown-driven, layout-measuring
+// interaction) isn't reliably triggerable here regardless of polyfills tried — no
+// interaction with any Select in this codebase's test suite manages it either, so
+// this isn't specific to this component. Rather than fight that, these tests drive
+// an active preview into place the same way DashboardSettingsPage itself would once
+// the Select fires its onValueChange (i.e. a setPreviewThemeId call) — this still
+// exercises the page's own logic (the "Stop previewing" button, the DOM being
+// updated, nothing being saved) in full; only the Select's own open/click mechanics
+// are unverified here, and that's a thin, visually-reviewable prop wire-up
+// (onValueChange={setPreviewThemeId}), not application logic.
+function SetPreviewOnMount({ id }: { id: string }) {
+  const { setPreviewThemeId } = usePreviewTheme()
+  useEffect(() => {
+    setPreviewThemeId(id)
+  }, [id, setPreviewThemeId])
+  return null
+}
+
+function renderPageWithPreview(id: string) {
+  return render(
+    <PreviewThemeProvider>
+      <SetPreviewOnMount id={id} />
+      <DashboardSettingsPage />
+    </PreviewThemeProvider>,
+  )
+}
+
 describe('reorderWidgets', () => {
   it('moves the active widget to the position of the target widget', () => {
     const result = reorderWidgets(baseConfig.widgets, 'announcements', 'chores')
@@ -63,8 +100,11 @@ describe('DashboardSettingsPage', () => {
   const mutate = vi.fn()
 
   beforeEach(() => {
-    // jsdom doesn't implement the Pointer Events / scrollIntoView APIs Radix
-    // Select's interactions rely on — polyfill just enough for open/select to work.
+    // jsdom doesn't implement the Pointer Events / scrollIntoView / real-layout
+    // APIs Radix Select's default "item-aligned" positioning relies on to open —
+    // these get it far enough to mount without throwing, but actually opening a
+    // Select and clicking an option isn't achievable here even so (see
+    // SetPreviewOnMount below for how the preview tests work around that).
     Element.prototype.hasPointerCapture ??= () => false
     Element.prototype.setPointerCapture ??= () => {}
     Element.prototype.releasePointerCapture ??= () => {}
@@ -105,7 +145,7 @@ describe('DashboardSettingsPage', () => {
   })
 
   it('renders a row per widget using registry metadata for the label', () => {
-    render(<DashboardSettingsPage />)
+    renderPage()
 
     expect(screen.getByText('Announcements')).toBeInTheDocument()
     expect(screen.getByText('Calendar')).toBeInTheDocument()
@@ -113,7 +153,7 @@ describe('DashboardSettingsPage', () => {
   })
 
   it('gives each widget a keyboard-focusable, labeled drag handle', () => {
-    render(<DashboardSettingsPage />)
+    renderPage()
 
     const handle = screen.getByRole('button', { name: /reorder announcements/i })
     expect(handle).toHaveAttribute('tabindex', '0')
@@ -121,7 +161,7 @@ describe('DashboardSettingsPage', () => {
 
   it('toggles visibility locally without saving until "Save changes" is clicked', async () => {
     const user = userEvent.setup()
-    render(<DashboardSettingsPage />)
+    renderPage()
 
     const announcementsSwitch = screen.getByRole('switch', { name: /show announcements/i })
     expect(announcementsSwitch).toHaveAttribute('aria-checked', 'true')
@@ -139,7 +179,7 @@ describe('DashboardSettingsPage', () => {
   })
 
   it('seeds the theme picker from the current server-persisted theme', () => {
-    render(<DashboardSettingsPage />)
+    renderPage()
 
     expect(screen.getByRole('combobox', { name: /theme/i })).toHaveTextContent('Modern')
   })
@@ -153,15 +193,47 @@ describe('DashboardSettingsPage', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    render(<DashboardSettingsPage />)
+    renderPage()
 
     expect(screen.getByText(/showing halloween today/i)).toBeInTheDocument()
     vi.useRealTimers()
   })
 
   it('omits the seasonal-palette caption for a non-auto theme', () => {
-    render(<DashboardSettingsPage />)
+    renderPage()
 
     expect(screen.queryByText(/showing .* today/i)).not.toBeInTheDocument()
+  })
+
+  it('shows a "Stop previewing" action once a preview is active', () => {
+    // The DOM's data-theme attribute is ThemeProvider's responsibility, reading
+    // this same shared context — not mounted in this file, and already covered
+    // directly in ThemeProvider.test.tsx's "applies an active preview theme" case.
+    // What belongs to DashboardSettingsPage itself is this button's visibility.
+    renderPageWithPreview('seasonal-halloween')
+
+    expect(screen.getByRole('button', { name: /stop previewing/i })).toBeInTheDocument()
+  })
+
+  it('does not show "Stop previewing" when no preview is active', () => {
+    renderPage()
+
+    expect(screen.queryByRole('button', { name: /stop previewing/i })).not.toBeInTheDocument()
+  })
+
+  it('does not persist or save anything just from an active preview', () => {
+    renderPageWithPreview('seasonal-christmas')
+
+    expect(mutate).not.toHaveBeenCalled()
+  })
+
+  it('clears the preview when "Stop previewing" is clicked', async () => {
+    const user = userEvent.setup()
+    renderPageWithPreview('seasonal-christmas')
+    expect(screen.getByRole('button', { name: /stop previewing/i })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /stop previewing/i }))
+
+    expect(screen.queryByRole('button', { name: /stop previewing/i })).not.toBeInTheDocument()
   })
 })
