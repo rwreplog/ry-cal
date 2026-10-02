@@ -9,6 +9,10 @@ public sealed class Dashboard
     // change (a CSS token block + one constant entry), never a migration.
     public string Theme { get; set; } = "modern";
 
+    // How the calendar widget lays out its 7 days: "week" (Sunday–Saturday) or
+    // "rolling" (today plus the next 6). A string for the same reason as Theme.
+    public string CalendarView { get; set; } = "week";
+
     // Household location for the Weather widget — null until the admin sets it via
     // Display settings. Lives here rather than a new entity because Dashboard is
     // already the single-row-per-family settings blob and SeedData guarantees a row

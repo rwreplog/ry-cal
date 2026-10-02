@@ -65,7 +65,8 @@ public class DashboardConfigApiTests(WebApplicationFactory<Program> factory) : I
         {
             var restoreRequest = new UpdateDashboardConfigRequest(
                 original.Widgets.Select(w => new UpdateDashboardWidgetRequest(w.Type, w.Size, w.IsVisible)).ToList(),
-                original.Theme);
+                original.Theme,
+                original.CalendarView);
             await client.PutAsJsonAsync("/api/dashboard/config", restoreRequest, JsonOptions);
         }
     }
@@ -79,6 +80,43 @@ public class DashboardConfigApiTests(WebApplicationFactory<Program> factory) : I
             "/api/dashboard/config",
             new UpdateDashboardConfigRequest([], "modern"),
             JsonOptions);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateConfig_PersistsCalendarView_AndKeepsItWhenOmitted()
+    {
+        var client = factory.CreateClient();
+        var original = await client.GetFromJsonAsync<DashboardConfigDto>("/api/dashboard/config", JsonOptions);
+        Assert.NotNull(original);
+        var widgets = original!.Widgets.Select(w => new UpdateDashboardWidgetRequest(w.Type, w.Size, w.IsVisible)).ToList();
+
+        try
+        {
+            await client.PutAsJsonAsync("/api/dashboard/config", new UpdateDashboardConfigRequest(widgets, original.Theme, "rolling"), JsonOptions);
+            var rolling = await client.GetFromJsonAsync<DashboardConfigDto>("/api/dashboard/config", JsonOptions);
+            Assert.Equal("rolling", rolling!.CalendarView);
+
+            // A client that only edits widgets/theme must not reset the calendar view.
+            await client.PutAsJsonAsync("/api/dashboard/config", new UpdateDashboardConfigRequest(widgets, original.Theme), JsonOptions);
+            var kept = await client.GetFromJsonAsync<DashboardConfigDto>("/api/dashboard/config", JsonOptions);
+            Assert.Equal("rolling", kept!.CalendarView);
+        }
+        finally
+        {
+            await client.PutAsJsonAsync("/api/dashboard/config", new UpdateDashboardConfigRequest(widgets, original.Theme, original.CalendarView), JsonOptions);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateConfig_RejectsUnknownCalendarView()
+    {
+        var client = factory.CreateClient();
+        var original = await client.GetFromJsonAsync<DashboardConfigDto>("/api/dashboard/config", JsonOptions);
+        var widgets = original!.Widgets.Select(w => new UpdateDashboardWidgetRequest(w.Type, w.Size, w.IsVisible)).ToList();
+
+        var response = await client.PutAsJsonAsync("/api/dashboard/config", new UpdateDashboardConfigRequest(widgets, original.Theme, "fortnight"), JsonOptions);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

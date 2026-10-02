@@ -1,16 +1,52 @@
-import { useMemo } from 'react'
-import { CalendarDays } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { CalendarDays, Check } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useChoreMutations } from '@/features/chores/hooks/useChoreMutations'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
+import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { cn } from '@/lib/utils'
 import type { CalendarEventDto, ChoreSummaryDto, MealPlanSummaryDto } from '@/types/dashboard'
-import { bucketChoresByDay, bucketEventsByDay, bucketMealsByDay, formatEventTime, getWeekDays, isSameLocalDay } from './weekUtils'
+import {
+  bucketChoresByDay,
+  bucketEventsByDay,
+  type ChoreOccurrence,
+  bucketMealsByDay,
+  formatEventTime,
+  getAllDayBars,
+  getUpcomingDays,
+  getWeekDays,
+  isAllDayEvent,
+  isSameLocalDay,
+  packAllDayLanes,
+} from './weekUtils'
 import { WEEKDAY_COLORS } from './weekdayColors'
 
 const MAX_VISIBLE_EVENTS_PER_DAY = 4
-const MAX_VISIBLE_CHORES_PER_DAY = 3
+const MAX_VISIBLE_CHORES_PER_DAY = 6
+const FALLBACK_PILL_COLOR = '#94a3b8'
+
+// Assignee colors are user-picked, so the pill's text/checkbox color is chosen per
+// pill (black or white by perceived luminance) rather than assumed.
+function readableTextColor(hex: string): string {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim())
+  if (!match) return '#0f172a'
+  const n = parseInt(match[1], 16)
+  const luminance = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return luminance > 0.6 ? '#0f172a' : '#ffffff'
+}
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+// Empty sections show a quiet dash (screen readers still get the words) — seven
+// repeated "No dinner planned" lines were visual noise on a wall display.
+function EmptyDash({ label }: { label: string }) {
+  return (
+    <p className="text-muted-foreground/50 text-sm">
+      <span aria-hidden="true">—</span>
+      <span className="sr-only">{label}</span>
+    </p>
+  )
+}
 
 // Literal, not interpolated (`col-start-${i}` is invisible to Tailwind's build-time
 // scanner — the same dynamic-class-name bug this codebase has hit twice before).
@@ -44,20 +80,40 @@ function buildChoreLegend(chores: ChoreSummaryDto[]): ChoreLegendEntry[] {
   return [...byMember.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
 
+const hasUnassignedChore = (chores: ChoreSummaryDto[]) => chores.some((c) => !c.assignedToFamilyMemberId)
+
 export function CalendarWidget() {
   const { data, isLoading, isError } = useDashboard()
-  const today = useMemo(() => new Date(), [])
-  const weekDays = useMemo(() => getWeekDays(today), [today])
+  const { data: config } = useDashboardConfig()
+  const isRolling = config?.calendarView === 'rolling'
+  const { complete } = useChoreMutations()
+  const handleCompleteChore = (chore: ChoreSummaryDto) => {
+    if (!chore.assignedToFamilyMemberId || chore.isComplete) return
+    complete.mutate({ id: chore.id, request: { familyMemberId: chore.assignedToFamilyMemberId } })
+  }
+  // Re-evaluated periodically so a kiosk left running past midnight rolls the week
+  // (and the "today" highlight) forward instead of freezing on the day it loaded.
+  const [today, setToday] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => {
+      const current = new Date()
+      setToday((prev) => (isSameLocalDay(prev, current) ? prev : current))
+    }, 60 * 1000)
+    return () => clearInterval(id)
+  }, [])
+  const weekDays = useMemo(() => (isRolling ? getUpcomingDays(today) : getWeekDays(today)), [isRolling, today])
   const eventsByDay = useMemo(
-    () => bucketEventsByDay(data?.calendar.events ?? [], weekDays),
+    () => bucketEventsByDay(data?.calendar.events ?? [], weekDays).map((day) => day.filter((e) => !isAllDayEvent(e))),
     [data, weekDays],
   )
+  const allDayLanes = useMemo(() => packAllDayLanes(getAllDayBars(data?.calendar.events ?? [], weekDays)), [data, weekDays])
   const choresByDay = useMemo(
     () => bucketChoresByDay(data?.chores.items ?? [], weekDays),
     [data, weekDays],
   )
   const mealsByDay = useMemo(() => bucketMealsByDay(data?.meals.items ?? [], weekDays), [data, weekDays])
   const choreLegend = useMemo(() => buildChoreLegend(data?.chores.items ?? []), [data])
+  const showUnassignedLegend = useMemo(() => hasUnassignedChore(data?.chores.items ?? []), [data])
 
   const rangeLabel = `${weekDays[0].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${weekDays[6].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
 
@@ -65,7 +121,7 @@ export function CalendarWidget() {
     <Card>
       <CardHeader className="flex-row items-center gap-2">
         <CalendarDays className="text-muted-foreground size-5" aria-hidden="true" />
-        <CardTitle className="text-xl">This Week</CardTitle>
+        <CardTitle className="text-xl">{isRolling ? 'Next 7 Days' : 'This Week'}</CardTitle>
         <span className="text-muted-foreground text-sm">{rangeLabel}</span>
       </CardHeader>
       <CardContent>
@@ -90,15 +146,48 @@ export function CalendarWidget() {
 
         {!isLoading && !isError && (
           <div className="grid grid-cols-7 gap-x-2 gap-y-1.5">
+            {/* Soft tint behind today's whole column, spanning every row. */}
+            {weekDays.map(
+              (day, i) =>
+                isSameLocalDay(day, today) && (
+                  <div
+                    key="today-tint"
+                    className={cn('bg-foreground/[0.04] pointer-events-none -m-1 row-span-5 row-start-1 rounded-xl', COL_START[i])}
+                    aria-hidden="true"
+                  />
+                ),
+            )}
+            {allDayLanes.length > 0 && (
+              <div className="col-span-7 col-start-1 row-start-2 flex flex-col gap-1">
+                {allDayLanes.map((lane, laneIndex) => (
+                  <div key={laneIndex} className="grid grid-cols-7 gap-x-2">
+                    {lane.map((bar) => (
+                      <div
+                        key={bar.event.id}
+                        title={bar.event.title}
+                        style={{ gridColumn: `${bar.startIndex + 1} / span ${bar.endIndex - bar.startIndex + 1}` }}
+                        className={cn(
+                          'truncate rounded-md border px-2 py-0.5 text-xs font-medium',
+                          WEEKDAY_COLORS[weekDays[bar.startIndex].getDay()].chip,
+                        )}
+                      >
+                        {bar.event.title}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
             {weekDays.map((day, i) => (
               <DayColumn
                 key={day.toISOString()}
                 day={day}
-                label={WEEKDAY_LABELS[i]}
+                label={WEEKDAY_LABELS[day.getDay()]}
                 events={eventsByDay[i]}
                 meals={mealsByDay[i]}
                 chores={choresByDay[i]}
-                color={WEEKDAY_COLORS[i]}
+                onCompleteChore={handleCompleteChore}
+                color={WEEKDAY_COLORS[day.getDay()]}
                 isToday={isSameLocalDay(day, today)}
                 colStart={COL_START[i]}
               />
@@ -106,7 +195,7 @@ export function CalendarWidget() {
           </div>
         )}
 
-        {!isLoading && !isError && choreLegend.length > 0 && (
+        {!isLoading && !isError && (choreLegend.length > 0 || showUnassignedLegend) && (
           <div className="border-border mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t pt-3">
             <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Chores by</span>
             {choreLegend.map((entry) => (
@@ -119,6 +208,12 @@ export function CalendarWidget() {
                 <span className="text-sm">{entry.name}</span>
               </div>
             ))}
+            {showUnassignedLegend && (
+              <div className="flex items-center gap-1.5">
+                <span className="border-muted-foreground size-2.5 shrink-0 rounded-full border border-dashed" aria-hidden="true" />
+                <span className="text-sm">Unassigned</span>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
@@ -131,19 +226,20 @@ interface DayColumnProps {
   label: string
   events: CalendarEventDto[]
   meals: MealPlanSummaryDto[]
-  chores: ChoreSummaryDto[]
+  chores: ChoreOccurrence[]
   color: (typeof WEEKDAY_COLORS)[number]
   isToday: boolean
   colStart: string
+  onCompleteChore: (chore: ChoreSummaryDto) => void
 }
 
 // Renders as four separate grid items (header/events/meal/chores), each pinned to
 // an explicit row via row-start-N, rather than one flex-column wrapper — see
 // COL_START's comment for why: it's what makes each section line up across every
 // day. All three sections below the header are read-only here: dinner is edited at
-// /admin/meals, chores from the Chores widget or /admin/chores — this is a "what's
-// due when" glance, not another editor.
-function DayColumn({ day, label, events, meals, chores, color, isToday, colStart }: DayColumnProps) {
+// /admin/meals. Chores are the one exception: each is a large tap target that
+// checks it off directly, since this is used on a touchscreen.
+function DayColumn({ day, label, events, meals, chores, color, isToday, colStart, onCompleteChore }: DayColumnProps) {
   const visibleEvents = events.slice(0, MAX_VISIBLE_EVENTS_PER_DAY)
   const eventOverflowCount = events.length - visibleEvents.length
   const meal = meals[0] // one meal per day, enforced server-side
@@ -164,12 +260,8 @@ function DayColumn({ day, label, events, meals, chores, color, isToday, colStart
         </span>
       </div>
 
-      <div className={cn('row-start-2 flex flex-col gap-1', colStart)}>
-        {visibleEvents.length === 0 && (
-          <div className="border-border text-muted-foreground flex min-h-11 items-center justify-center rounded-md border border-dashed px-1.5 py-1 text-center text-[0.65rem] opacity-70">
-            No events today
-          </div>
-        )}
+      <div className={cn('row-start-3 flex flex-col gap-1', colStart)}>
+        {visibleEvents.length === 0 && <EmptyDash label="No events today" />}
         {visibleEvents.map((event) => (
           <div
             key={event.id}
@@ -185,36 +277,54 @@ function DayColumn({ day, label, events, meals, chores, color, isToday, colStart
         )}
       </div>
 
-      <div className={cn('border-border mt-0.5 flex flex-col gap-1 border-t pt-1.5', 'row-start-3', colStart)}>
+      <div className={cn('border-border mt-0.5 flex flex-col gap-1 border-t pt-1.5', 'row-start-4', colStart)}>
         <span className="text-muted-foreground text-[0.6rem] font-semibold tracking-wide uppercase">Dinner</span>
-        {!meal && <p className="text-muted-foreground text-[0.65rem]">No dinner planned</p>}
+        {!meal && <EmptyDash label="No dinner planned" />}
         {meal && (
-          <p className="truncate text-[0.65rem] leading-tight" title={meal.description ?? meal.name}>
+          <p className="truncate text-sm leading-tight" title={meal.description ?? meal.name}>
             {meal.name}
           </p>
         )}
       </div>
 
-      <div className={cn('border-border mt-0.5 flex flex-col gap-1 border-t pt-1.5', 'row-start-4', colStart)}>
+      <div className={cn('border-border mt-0.5 flex flex-col gap-1 border-t pt-1.5', 'row-start-5', colStart)}>
         <span className="text-muted-foreground text-[0.6rem] font-semibold tracking-wide uppercase">Chores</span>
-        {chores.length === 0 && <p className="text-muted-foreground text-[0.65rem]">No chores due</p>}
-        {visibleChores.map((chore) => (
-          <div key={chore.id} className="flex items-center gap-1.5" title={`${chore.title} — ${chore.assignedTo}`}>
-            <span
-              className="size-2 shrink-0 rounded-full"
-              style={{ backgroundColor: chore.assignedToColor ?? 'var(--muted-foreground)' }}
-              aria-hidden="true"
-            />
-            <span
+        {chores.length === 0 && <EmptyDash label="No chores due" />}
+        {visibleChores.map((chore) => {
+          // Unassigned chores can't be completed here (completion records who did
+          // it) — assign them in /admin/chores first.
+          const canComplete = Boolean(chore.assignedToFamilyMemberId) && !chore.isComplete && (!chore.isProjection || isToday)
+          const isUnassigned = !chore.assignedToFamilyMemberId
+          const pillColor = chore.assignedToColor ?? FALLBACK_PILL_COLOR
+          return (
+            <button
+              key={chore.occurrenceKey}
+              type="button"
+              disabled={!canComplete}
+              aria-label={chore.isComplete ? `${chore.title} is complete` : `Mark ${chore.title} complete`}
+              title={`${chore.title} — ${chore.assignedTo}`}
+              onClick={() => onCompleteChore(chore)}
+              style={isUnassigned ? undefined : { backgroundColor: pillColor, color: readableTextColor(pillColor) }}
               className={cn(
-                'truncate text-[0.65rem] leading-tight',
-                chore.isComplete && 'text-muted-foreground line-through',
+                'flex min-h-11 w-full items-center gap-1.5 rounded-2xl px-2 py-1 text-left transition-opacity active:brightness-90 disabled:cursor-default',
+                isUnassigned && 'text-muted-foreground border-muted-foreground/50 border-2 border-dashed',
+                chore.isComplete && 'opacity-60',
               )}
             >
-              {chore.title}
-            </span>
-          </div>
-        ))}
+              <span
+                className="flex size-5 shrink-0 items-center justify-center rounded-md border-2 border-current"
+                aria-hidden="true"
+              >
+                {chore.isComplete && <Check className="size-3.5" strokeWidth={3} />}
+              </span>
+              <span
+                className={cn('line-clamp-2 text-[0.8rem] leading-tight font-medium', chore.isComplete && 'line-through')}
+              >
+                {chore.title}
+              </span>
+            </button>
+          )
+        })}
         {choreOverflowCount > 0 && (
           <p className="text-muted-foreground px-1 text-[0.6rem]">+{choreOverflowCount} more</p>
         )}

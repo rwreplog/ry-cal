@@ -13,7 +13,7 @@ internal sealed class StubChoreProvider : IChoreProvider
     public Task<IReadOnlyList<ChoreSummaryDto>> GetActiveChoresAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<ChoreSummaryDto>>(
         [
-            new ChoreSummaryDto("chore-1", "Take out the trash", "Sam", null, "#0ea5e9", DateTimeOffset.UtcNow, false),
+            new ChoreSummaryDto("chore-1", "Take out the trash", "Sam", null, "#0ea5e9", DateTimeOffset.UtcNow, false, RecurrenceType.None),
         ]);
 }
 
@@ -93,7 +93,8 @@ internal sealed class StubDashboardConfigService : IDashboardConfigService
             new DashboardWidgetConfigDto("shopping", WidgetSize.Md, true),
             new DashboardWidgetConfigDto("countdowns", WidgetSize.Md, true),
         ],
-        "modern");
+        "modern",
+        "week");
 
     public Task<DashboardConfigDto> GetConfigAsync(CancellationToken cancellationToken) => Task.FromResult(Config);
 

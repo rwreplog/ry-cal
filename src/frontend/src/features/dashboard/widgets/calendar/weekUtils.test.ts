@@ -5,9 +5,12 @@ import {
   bucketEventsByDay,
   bucketMealsByDay,
   formatEventTime,
+  getAllDayBars,
+  getUpcomingDays,
   getWeekDays,
   isAllDayEvent,
   isSameLocalDay,
+  packAllDayLanes,
 } from './weekUtils'
 
 function event(overrides: Partial<CalendarEventDto> = {}): CalendarEventDto {
@@ -29,6 +32,7 @@ function chore(overrides: Partial<ChoreSummaryDto> = {}): ChoreSummaryDto {
     assignedToColor: '#0ea5e9',
     dueAtUtc: '2026-01-06T14:00:00Z', // Tuesday
     isComplete: false,
+    recurrence: 'none',
     ...overrides,
   }
 }
@@ -200,5 +204,66 @@ describe('formatEventTime', () => {
     const result = formatEventTime(event({ startsAtUtc: '2026-01-06T09:00:00Z', endsAtUtc: '2026-01-06T09:30:00Z' }))
     expect(result).toContain('–')
     expect(result).not.toBe('All Day')
+  })
+})
+
+describe('getUpcomingDays', () => {
+  it('starts on the reference day and covers 7 consecutive days', () => {
+    const days = getUpcomingDays(new Date(2026, 0, 10)) // Saturday
+    expect(days).toHaveLength(7)
+    expect(isSameLocalDay(days[0], new Date(2026, 0, 10))).toBe(true)
+    expect(isSameLocalDay(days[6], new Date(2026, 0, 16))).toBe(true)
+  })
+})
+
+describe('bucketChoresByDay (rolling window)', () => {
+  const days = getUpcomingDays(new Date(2026, 0, 7)) // Wed Jan 7 .. Tue Jan 13
+
+  it('leaves a past-due chore on its own (now hidden) day instead of piling onto today', () => {
+    const buckets = bucketChoresByDay([chore({ dueAtUtc: '2026-01-02T14:00:00Z' })], days)
+    expect(buckets.every((b) => b.length === 0)).toBe(true)
+  })
+
+  it('shows a daily chore on every visible day from its due date', () => {
+    const buckets = bucketChoresByDay([chore({ recurrence: 'daily', dueAtUtc: '2026-01-08T14:00:00Z' })], days)
+    expect(buckets.map((b) => b.length)).toEqual([0, 1, 1, 1, 1, 1, 1])
+    expect(buckets[1][0].isProjection).toBe(false)
+    expect(buckets[2][0].isProjection).toBe(true)
+  })
+
+  it('shows a weekly chore only on its weekday, including a later repeat inside the window', () => {
+    const wideDays = getUpcomingDays(new Date(2026, 0, 7), 14)
+    const buckets = bucketChoresByDay([chore({ recurrence: 'weekly', dueAtUtc: '2026-01-07T14:00:00Z' })], wideDays)
+    const hit = buckets.map((b, i) => (b.length ? i : -1)).filter((i) => i !== -1)
+    expect(hit).toEqual([0, 7])
+  })
+
+  it('does not repeat completed entries', () => {
+    const buckets = bucketChoresByDay([chore({ recurrence: 'daily', isComplete: true, dueAtUtc: '2026-01-07T14:00:00Z' })], days)
+    expect(buckets.map((b) => b.length)).toEqual([1, 0, 0, 0, 0, 0, 0])
+  })
+})
+
+describe('all-day bars', () => {
+  const days = getUpcomingDays(new Date(2026, 0, 6))
+  const multiDay = event({ id: 'multi', startsAtUtc: '2026-01-06T00:00:00Z', endsAtUtc: '2026-01-09T00:00:00Z' })
+
+  it('turns a multi-day all-day event into one bar spanning its days', () => {
+    const bars = getAllDayBars([multiDay], days)
+    expect(bars).toHaveLength(1)
+    expect([bars[0].startIndex, bars[0].endIndex]).toEqual([0, 2])
+  })
+
+  it('ignores timed events', () => {
+    expect(getAllDayBars([event()], days)).toHaveLength(0)
+  })
+
+  it('stacks overlapping bars in separate lanes and shares a lane when they do not overlap', () => {
+    const other = event({ id: 'other', startsAtUtc: '2026-01-07T00:00:00Z', endsAtUtc: '2026-01-08T00:00:00Z' })
+    const later = event({ id: 'later', startsAtUtc: '2026-01-10T00:00:00Z', endsAtUtc: '2026-01-11T00:00:00Z' })
+    const lanes = packAllDayLanes(getAllDayBars([multiDay, other, later], days))
+    expect(lanes).toHaveLength(2)
+    expect(lanes[0].map((b) => b.event.id)).toEqual(['multi', 'later'])
+    expect(lanes[1].map((b) => b.event.id)).toEqual(['other'])
   })
 })

@@ -8,6 +8,9 @@ public static class DashboardDefaults
 {
     public const string DefaultTheme = "modern";
 
+    public const string DefaultCalendarView = "week";
+    public static readonly IReadOnlyList<string> CalendarViews = ["week", "rolling"];
+
     // Clock and Weather moved into the page header (DashboardShell) as an
     // always-visible strip; Meals and Birthdays moved into the Calendar widget as
     // per-day sections, same as Chores. DashboardConfigService prunes any family's

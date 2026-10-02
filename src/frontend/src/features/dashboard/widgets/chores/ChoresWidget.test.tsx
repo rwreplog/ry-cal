@@ -56,7 +56,7 @@ describe('ChoresWidget', () => {
       isLoading: false,
       isError: false,
       data: dashboardWith([
-        { id: 'chore-1', title: 'Take out the trash', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc: new Date().toISOString(), isComplete: false },
+        { id: 'chore-1', title: 'Take out the trash', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc: new Date().toISOString(), isComplete: false, recurrence: 'none' },
       ]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
@@ -76,7 +76,7 @@ describe('ChoresWidget', () => {
       isLoading: false,
       isError: false,
       data: dashboardWith([
-        { id: 'chore-2', title: 'Clean garage', assignedTo: 'Unassigned', assignedToFamilyMemberId: null, assignedToColor: null, dueAtUtc: new Date().toISOString(), isComplete: false },
+        { id: 'chore-2', title: 'Clean garage', assignedTo: 'Unassigned', assignedToFamilyMemberId: null, assignedToColor: null, dueAtUtc: new Date().toISOString(), isComplete: false, recurrence: 'none' },
       ]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
@@ -91,7 +91,7 @@ describe('ChoresWidget', () => {
       isLoading: false,
       isError: false,
       data: dashboardWith([
-        { id: 'chore-3', title: 'Feed the dog', assignedTo: 'Jordan', assignedToFamilyMemberId: 'member-2', assignedToColor: '#a855f7', dueAtUtc: new Date().toISOString(), isComplete: true },
+        { id: 'chore-3', title: 'Feed the dog', assignedTo: 'Jordan', assignedToFamilyMemberId: 'member-2', assignedToColor: '#a855f7', dueAtUtc: new Date().toISOString(), isComplete: true, recurrence: 'none' },
       ]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)

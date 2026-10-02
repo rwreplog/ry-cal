@@ -46,12 +46,12 @@ export function ChoresWidget() {
                     chore.assignedToFamilyMemberId &&
                     complete.mutate({ id: chore.id, request: { familyMemberId: chore.assignedToFamilyMemberId } })
                   }
-                  className="shrink-0 disabled:cursor-not-allowed"
+                  className="-m-2.5 flex size-11 shrink-0 items-center justify-center disabled:cursor-not-allowed"
                 >
                   {chore.isComplete ? (
-                    <CheckCircle2 className="size-4 text-emerald-500" aria-hidden="true" />
+                    <CheckCircle2 className="size-6 text-emerald-500" aria-hidden="true" />
                   ) : (
-                    <Circle className="text-muted-foreground size-4" aria-hidden="true" />
+                    <Circle className="text-muted-foreground size-6" aria-hidden="true" />
                   )}
                 </button>
                 <span className={chore.isComplete ? 'text-muted-foreground line-through' : undefined}>

@@ -37,11 +37,11 @@ export function ShoppingListWidget() {
             <button
               key={item.id}
               type="button"
-              className="flex items-center gap-2 text-left"
+              className="active:bg-muted flex min-h-11 items-center gap-2 rounded-md text-left"
               onClick={() => toggle.mutate(item.id)}
               aria-label={`Mark ${item.name} checked`}
             >
-              <Circle className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+              <Circle className="text-muted-foreground size-6 shrink-0" aria-hidden="true" />
               <span>{item.name}</span>
             </button>
           ))}

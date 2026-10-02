@@ -1,3 +1,5 @@
+import type { RecurrenceType } from './chores'
+
 export interface WidgetInstanceDto {
   type: string
   order: number
@@ -20,6 +22,7 @@ export interface ChoreSummaryDto {
   assignedToColor: string | null
   dueAtUtc: string
   isComplete: boolean
+  recurrence: RecurrenceType
 }
 
 export interface WeatherSnapshotDto {
@@ -83,9 +86,12 @@ export interface DashboardWidgetConfigDto {
   isVisible: boolean
 }
 
+export type CalendarView = 'week' | 'rolling'
+
 export interface DashboardConfigDto {
   widgets: DashboardWidgetConfigDto[]
   theme: string
+  calendarView: CalendarView
 }
 
 export type UpdateDashboardWidgetRequest = DashboardWidgetConfigDto
@@ -93,6 +99,7 @@ export type UpdateDashboardWidgetRequest = DashboardWidgetConfigDto
 export interface UpdateDashboardConfigRequest {
   widgets: UpdateDashboardWidgetRequest[]
   theme: string
+  calendarView?: CalendarView
 }
 
 export interface HouseholdLocationDto {

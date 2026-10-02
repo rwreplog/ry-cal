@@ -26,13 +26,18 @@ import { getWidget } from '@/features/dashboard/registry/widgetRegistry'
 import { AUTO_SEASONAL_THEME_ID, SEASONAL_THEMES, THEMES, getEffectiveTheme, seasonalThemeLabel } from '@/features/theme/constants'
 import { usePreviewTheme } from '@/features/theme/PreviewThemeContext'
 import { cn } from '@/lib/utils'
-import type { DashboardWidgetConfigDto } from '@/types/dashboard'
+import type { CalendarView, DashboardWidgetConfigDto } from '@/types/dashboard'
 import { LocationSettings } from './LocationSettings'
 
 const SIZE_LABEL: Record<DashboardWidgetConfigDto['size'], string> = {
   sm: 'Small',
   md: 'Medium',
   lg: 'Large',
+}
+
+const CALENDAR_VIEW_LABEL: Record<CalendarView, string> = {
+  week: 'Sunday – Saturday week',
+  rolling: 'Next 7 days (starts today)',
 }
 
 const SIZES: DashboardWidgetConfigDto['size'][] = ['sm', 'md', 'lg']
@@ -66,12 +71,14 @@ export function DashboardSettingsPage() {
   // in-progress drag/toggle/size edits).
   const [widgets, setWidgets] = useState<DashboardWidgetConfigDto[]>([])
   const [theme, setTheme] = useState('')
+  const [calendarView, setCalendarView] = useState<CalendarView>('week')
   const [seeded, setSeeded] = useState(false)
 
   useEffect(() => {
     if (data && !seeded) {
       setWidgets(data.widgets)
       setTheme(data.theme)
+      setCalendarView(data.calendarView)
       setSeeded(true)
     }
   }, [data, seeded])
@@ -102,11 +109,16 @@ export function DashboardSettingsPage() {
     // on every other page, so picking "Auto (Seasonal)" previews today's actual
     // holiday palette rather than literally applying the unstyled "auto" id.
     document.documentElement.dataset.theme = getEffectiveTheme(newTheme)
-    update.mutate({ widgets, theme: newTheme })
+    update.mutate({ widgets, theme: newTheme, calendarView })
+  }
+
+  const handleCalendarViewChange = (view: CalendarView) => {
+    setCalendarView(view)
+    update.mutate({ widgets, theme, calendarView: view })
   }
 
   const handleSave = () => {
-    update.mutate({ widgets, theme })
+    update.mutate({ widgets, theme, calendarView })
   }
 
   if (isLoading || !seeded) {
@@ -134,6 +146,22 @@ export function DashboardSettingsPage() {
         {theme === AUTO_SEASONAL_THEME_ID && (
           <p className="text-muted-foreground text-sm">Showing {seasonalThemeLabel(getEffectiveTheme(theme))} today.</p>
         )}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">Calendar view</h2>
+        <Select value={calendarView} onValueChange={(v) => handleCalendarViewChange(v as CalendarView)}>
+          <SelectTrigger aria-label="Calendar view" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(CALENDAR_VIEW_LABEL) as CalendarView[]).map((view) => (
+              <SelectItem key={view} value={view}>
+                {CALENDAR_VIEW_LABEL[view]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </section>
 
       <section className="flex flex-col gap-2">

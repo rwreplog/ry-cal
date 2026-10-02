@@ -129,6 +129,7 @@ public sealed class ChoreService(AppDbContext db, ICurrentUserService currentUse
             ChoreId = chore.Id,
             FamilyMemberId = request.FamilyMemberId,
             CompletedAtUtc = now,
+            DueAtUtc = chore.DueAtUtc,
         });
 
         chore.LastCompletedAtUtc = now;

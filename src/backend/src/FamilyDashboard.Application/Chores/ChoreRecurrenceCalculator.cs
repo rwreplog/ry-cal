@@ -4,18 +4,31 @@ namespace FamilyDashboard.Application.Chores;
 
 public static class ChoreRecurrenceCalculator
 {
-    // Rolls forward from `now` rather than the stale due date, so completing an
-    // overdue recurring chore always clears it to its next natural cycle in one tap
-    // instead of requiring several taps to "catch up".
+    // Steps forward in whole periods from the existing due date, so a recurring chore
+    // keeps its day of the week (and time of day) even when it's completed late —
+    // finishing a Wednesday chore on Saturday still schedules it for the next
+    // Wednesday, not the next Saturday. An overdue chore still clears to its next
+    // future occurrence in one tap instead of requiring several to "catch up".
     public static DateTimeOffset ComputeNextDueAtUtc(RecurrenceType recurrence, DateTimeOffset currentDueAtUtc, DateTimeOffset nowUtc)
     {
-        var from = currentDueAtUtc > nowUtc ? currentDueAtUtc : nowUtc;
-
-        return recurrence switch
+        var periodDays = recurrence switch
         {
-            RecurrenceType.Daily => from.AddDays(1),
-            RecurrenceType.Weekly => from.AddDays(7),
-            _ => currentDueAtUtc,
+            RecurrenceType.Daily => 1,
+            RecurrenceType.Weekly => 7,
+            _ => 0,
         };
+
+        if (periodDays == 0)
+        {
+            return currentDueAtUtc;
+        }
+
+        if (currentDueAtUtc > nowUtc)
+        {
+            return currentDueAtUtc.AddDays(periodDays);
+        }
+
+        var periodsBehind = (long)Math.Floor((nowUtc - currentDueAtUtc).TotalDays / periodDays) + 1;
+        return currentDueAtUtc.AddDays(periodsBehind * periodDays);
     }
 }

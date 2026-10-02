@@ -7,6 +7,12 @@ export function getWeekDays(reference: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() + i))
 }
 
+// Rolling window starting at `reference` (today is always first) — more useful on a
+// wall display than a fixed Sun–Sat week, where late-week days are mostly the past.
+export function getUpcomingDays(reference: Date, count = 7): Date[] {
+  return Array.from({ length: count }, (_, i) => new Date(reference.getFullYear(), reference.getMonth(), reference.getDate() + i))
+}
+
 export function isSameLocalDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 }
@@ -72,13 +78,46 @@ function bucketByDay<T>(items: T[], weekDays: Date[], getDate: (item: T) => Date
   return buckets
 }
 
-export function bucketChoresByDay(chores: ChoreSummaryDto[], weekDays: Date[]): ChoreSummaryDto[][] {
-  return bucketByDay(
-    chores,
-    weekDays,
-    (chore) => new Date(chore.dueAtUtc),
-    (chore) => new Date(chore.dueAtUtc).getTime(),
-  )
+export interface ChoreOccurrence extends ChoreSummaryDto {
+  // Unique per rendered pill — a recurring chore can appear on several days.
+  occurrenceKey: string
+  // A repeat of a recurring chore on a later matching day, rather than the chore's
+  // actual next due date. Only completable once its day arrives.
+  isProjection: boolean
+}
+
+// A chore sits on the day it's due. A recurring chore also repeats on every later
+// visible day its pattern hits (daily: every day; weekly: the same weekday), so
+// "Laundry every Wednesday" shows on each Wednesday in view instead of only the
+// next one. Completed entries are historical and never repeat, and past-due chores
+// stay on their original (now-past) day rather than piling onto today.
+export function bucketChoresByDay(chores: ChoreSummaryDto[], weekDays: Date[]): ChoreOccurrence[][] {
+  const buckets: ChoreOccurrence[][] = weekDays.map(() => [])
+  for (const chore of chores) {
+    const due = new Date(chore.dueAtUtc)
+    const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate())
+
+    weekDays.forEach((day, index) => {
+      if (isSameLocalDay(day, due)) {
+        buckets[index].push({ ...chore, occurrenceKey: chore.id, isProjection: false })
+        return
+      }
+      if (chore.isComplete || chore.recurrence === 'none' || day.getTime() <= dueDay.getTime()) return
+      const matches = chore.recurrence === 'daily' || (chore.recurrence === 'weekly' && day.getDay() === dueDay.getDay())
+      if (!matches) return
+      const projected = new Date(day.getFullYear(), day.getMonth(), day.getDate(), due.getHours(), due.getMinutes())
+      buckets[index].push({
+        ...chore,
+        dueAtUtc: projected.toISOString(),
+        occurrenceKey: `${chore.id}:${index}`,
+        isProjection: true,
+      })
+    })
+  }
+  for (const bucket of buckets) {
+    bucket.sort((a, b) => new Date(a.dueAtUtc).getTime() - new Date(b.dueAtUtc).getTime())
+  }
+  return buckets
 }
 
 // MealPlanEntry.Date is a DateOnly, serialized as "yyyy-MM-dd" with no time/zone —
@@ -113,4 +152,35 @@ export function formatEventTime(event: CalendarEventDto): string {
   const end = new Date(event.endsAtUtc)
   const timeFormat: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit' }
   return `${start.toLocaleTimeString(undefined, timeFormat)} – ${end.toLocaleTimeString(undefined, timeFormat)}`
+}
+
+export interface AllDayBar {
+  event: CalendarEventDto
+  startIndex: number
+  endIndex: number
+}
+
+// All-day events as bars over the visible days, clamped to the window — a Sun–Fri
+// event becomes one bar spanning six columns instead of six repeated chips.
+export function getAllDayBars(events: CalendarEventDto[], days: Date[]): AllDayBar[] {
+  const bars: AllDayBar[] = []
+  for (const event of events) {
+    if (!isAllDayEvent(event)) continue
+    const { start, end } = getEventDayRange(event)
+    const indices = days.map((day, i) => (day.getTime() >= start.getTime() && day.getTime() <= end.getTime() ? i : -1)).filter((i) => i !== -1)
+    if (indices.length === 0) continue
+    bars.push({ event, startIndex: indices[0], endIndex: indices[indices.length - 1] })
+  }
+  return bars.sort((a, b) => a.startIndex - b.startIndex || b.endIndex - a.endIndex)
+}
+
+// Greedy lane packing so overlapping bars stack instead of covering each other.
+export function packAllDayLanes(bars: AllDayBar[]): AllDayBar[][] {
+  const lanes: AllDayBar[][] = []
+  for (const bar of bars) {
+    const lane = lanes.find((l) => l[l.length - 1].endIndex < bar.startIndex)
+    if (lane) lane.push(bar)
+    else lanes.push([bar])
+  }
+  return lanes
 }

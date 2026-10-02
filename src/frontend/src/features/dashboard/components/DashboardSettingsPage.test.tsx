@@ -37,6 +37,7 @@ const mockedUseHouseholdLocationMutations = vi.mocked(useHouseholdLocationMutati
 
 const baseConfig: DashboardConfigDto = {
   theme: 'modern',
+  calendarView: 'week',
   widgets: [
     { type: 'announcements', size: 'sm', isVisible: true },
     { type: 'calendar', size: 'md', isVisible: true },
@@ -176,6 +177,21 @@ describe('DashboardSettingsPage', () => {
     const payload = mutate.mock.calls[0][0]
     expect(payload.theme).toBe('modern')
     expect(payload.widgets.find((w: { type: string }) => w.type === 'announcements').isVisible).toBe(false)
+  })
+
+  it('seeds the calendar view picker from the saved setting and includes it when saving', async () => {
+    mockedUseDashboardConfig.mockReturnValue({
+      data: { ...baseConfig, calendarView: 'rolling' },
+      isLoading: false,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+    const user = userEvent.setup()
+    renderPage()
+
+    expect(screen.getByRole('combobox', { name: /calendar view/i })).toHaveTextContent('Next 7 days')
+
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+    expect(mutate.mock.calls[0][0].calendarView).toBe('rolling')
   })
 
   it('seeds the theme picker from the current server-persisted theme', () => {

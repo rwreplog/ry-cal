@@ -28,14 +28,25 @@ public class ChoreRecurrenceCalculatorTests
     }
 
     [Fact]
-    public void ComputeNextDueAtUtc_Weekly_RollsSevenDaysFromNow_WhenOverdue()
+    public void ComputeNextDueAtUtc_Weekly_KeepsTheSameWeekday_WhenCompletedLate()
     {
-        var due = new DateTimeOffset(2025, 12, 25, 9, 0, 0, TimeSpan.Zero); // 3 days overdue
+        var due = new DateTimeOffset(2025, 12, 25, 9, 0, 0, TimeSpan.Zero); // a Thursday, 3 days overdue
         var now = new DateTimeOffset(2025, 12, 28, 9, 0, 0, TimeSpan.Zero);
 
         var next = ChoreRecurrenceCalculator.ComputeNextDueAtUtc(RecurrenceType.Weekly, due, now);
 
-        // Rolls from `now`, not the stale due date, so one tap clears the backlog.
-        Assert.Equal(now.AddDays(7), next);
+        Assert.Equal(due.AddDays(7), next);
+        Assert.Equal(DayOfWeek.Thursday, next.DayOfWeek);
+    }
+
+    [Fact]
+    public void ComputeNextDueAtUtc_Daily_SkipsMissedDaysToNextFutureOccurrence()
+    {
+        var due = new DateTimeOffset(2025, 12, 25, 9, 0, 0, TimeSpan.Zero);
+        var now = new DateTimeOffset(2025, 12, 28, 10, 0, 0, TimeSpan.Zero);
+
+        var next = ChoreRecurrenceCalculator.ComputeNextDueAtUtc(RecurrenceType.Daily, due, now);
+
+        Assert.Equal(new DateTimeOffset(2025, 12, 29, 9, 0, 0, TimeSpan.Zero), next);
     }
 }

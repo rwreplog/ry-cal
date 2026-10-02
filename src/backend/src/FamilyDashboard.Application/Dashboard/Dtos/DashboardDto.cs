@@ -34,7 +34,8 @@ public sealed record ChoreSummaryDto(
     Guid? AssignedToFamilyMemberId,
     string? AssignedToColor,
     DateTimeOffset DueAtUtc,
-    bool IsComplete);
+    bool IsComplete,
+    RecurrenceType Recurrence);
 
 // Nullable: no household location has been configured yet is a real, non-error state.
 public sealed record WeatherSectionDto(WeatherSnapshotDto? Current);

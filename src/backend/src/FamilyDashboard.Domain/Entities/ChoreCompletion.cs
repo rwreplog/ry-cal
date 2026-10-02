@@ -7,4 +7,8 @@ public sealed class ChoreCompletion
     public required Guid ChoreId { get; set; }
     public required Guid FamilyMemberId { get; set; }
     public DateTimeOffset CompletedAtUtc { get; init; }
+
+    // The occurrence this completion was for (the chore's due date before a recurring
+    // chore rolls forward). Null on rows recorded before this was tracked.
+    public DateTimeOffset? DueAtUtc { get; init; }
 }

@@ -6,5 +6,7 @@ export function useDashboard() {
     queryKey: ['dashboard'],
     queryFn: ({ signal }) => fetchDashboard(signal),
     refetchInterval: 5 * 60 * 1000,
+    // A wall-mounted kiosk's tab can be occluded/backgrounded; it should still keep refreshing.
+    refetchIntervalInBackground: true,
   })
 }
