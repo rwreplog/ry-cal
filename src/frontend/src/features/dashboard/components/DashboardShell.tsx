@@ -1,4 +1,5 @@
-import { Maximize, Minimize } from 'lucide-react'
+import { Maximize, Minimize, Settings } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
 import { useFullscreen } from '@/features/dashboard/hooks/useFullscreen'
@@ -7,7 +8,7 @@ import { HolidayAnimationOverlay } from '@/features/theme/HolidayAnimationOverla
 import { NightDimOverlay } from './NightDimOverlay'
 import { DashboardError } from './DashboardError'
 import { DashboardLoading } from './DashboardLoading'
-import { HeaderClockWeather } from './HeaderClockWeather'
+import { HeaderClock } from './HeaderClock'
 import { LastUpdatedIndicator } from './LastUpdatedIndicator'
 import { WidgetGrid } from './WidgetGrid'
 
@@ -37,12 +38,23 @@ export function DashboardShell() {
           <LastUpdatedIndicator updatedAt={dataUpdatedAt} isFetching={isFetching} />
         </div>
         <div className="flex justify-center">
-          <HeaderClockWeather />
+          <HeaderClock />
         </div>
         <div className="flex items-center justify-center gap-2 sm:justify-end">
           {isTvMode && !isFullscreen && (
             <Button variant="outline" size="sm" onClick={() => void enter()}>
               Enter fullscreen
+            </Button>
+          )}
+          {/* Otherwise there's no way back to Admin from the dashboard short of typing
+              the URL. Hidden in TV mode, same as the subtitle above — a kiosk display
+              shouldn't invite taps into the admin area; exiting TV mode (below)
+              restores it. */}
+          {!isTvMode && (
+            <Button variant="ghost" size="icon" aria-label="Open admin settings" asChild>
+              <Link to="/admin">
+                <Settings />
+              </Link>
             </Button>
           )}
           <Button

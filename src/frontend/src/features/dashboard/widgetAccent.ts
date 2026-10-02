@@ -10,7 +10,7 @@
 // rule gets generated, while tailwind-merge still (correctly, per its own logic)
 // drops the earlier bg-card class it appears to conflict with — net result:
 // no background at all.
-export type AccentableWidget = 'chores' | 'announcements' | 'shopping' | 'countdowns'
+export type AccentableWidget = 'chores' | 'announcements' | 'shopping' | 'countdowns' | 'weather'
 
 const WIDGET_ACCENT_CLASSES: Record<AccentableWidget, string> = {
   chores: 'bg-[var(--widget-chores-bg,var(--card))] text-[var(--widget-chores-fg,var(--card-foreground))]',
@@ -19,6 +19,7 @@ const WIDGET_ACCENT_CLASSES: Record<AccentableWidget, string> = {
   shopping: 'bg-[var(--widget-shopping-bg,var(--card))] text-[var(--widget-shopping-fg,var(--card-foreground))]',
   countdowns:
     'bg-[var(--widget-countdowns-bg,var(--card))] text-[var(--widget-countdowns-fg,var(--card-foreground))]',
+  weather: 'bg-[var(--widget-weather-bg,var(--card))] text-[var(--widget-weather-fg,var(--card-foreground))]',
 }
 
 export function widgetAccentClasses(type: AccentableWidget): string {

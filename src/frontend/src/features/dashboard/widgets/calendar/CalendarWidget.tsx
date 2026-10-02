@@ -7,6 +7,7 @@ import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
 import { useDashboardConfig } from '@/features/dashboard/hooks/useDashboardConfig'
 import { cn } from '@/lib/utils'
 import type { CalendarEventDto, ChoreSummaryDto, MealPlanSummaryDto } from '@/types/dashboard'
+import type { WidgetComponentProps } from '@/types/widget'
 import {
   bucketChoresByDay,
   bucketEventsByDay,
@@ -82,7 +83,14 @@ function buildChoreLegend(chores: ChoreSummaryDto[]): ChoreLegendEntry[] {
 
 const hasUnassignedChore = (chores: ChoreSummaryDto[]) => chores.some((c) => !c.assignedToFamilyMemberId)
 
-export function CalendarWidget() {
+interface CalendarWidgetProps extends WidgetComponentProps {
+  // Lets the sidebar dashboard layout stretch this card to fill its tall right
+  // pane (passed as "flex h-full flex-col") — a plain stacked-mode render passes
+  // nothing, so the Card's own default (auto) height is unaffected.
+  className?: string
+}
+
+export function CalendarWidget({ className }: CalendarWidgetProps = {}) {
   const { data, isLoading, isError } = useDashboard()
   const { data: config } = useDashboardConfig()
   const isRolling = config?.calendarView === 'rolling'
@@ -118,13 +126,13 @@ export function CalendarWidget() {
   const rangeLabel = `${weekDays[0].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${weekDays[6].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
 
   return (
-    <Card>
-      <CardHeader className="flex-row items-center gap-2">
+    <Card className={cn('flex h-full flex-col', className)}>
+      <CardHeader className="flex-row shrink-0 items-center gap-2">
         <CalendarDays className="text-muted-foreground size-5" aria-hidden="true" />
         <CardTitle className="text-xl">{isRolling ? 'Next 7 Days' : 'This Week'}</CardTitle>
         <span className="text-muted-foreground text-sm">{rangeLabel}</span>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-y-auto">
         {isLoading && (
           <div className="grid grid-cols-7 gap-2">
             {Array.from({ length: 7 }).map((_, i) => (
@@ -167,7 +175,7 @@ export function CalendarWidget() {
                         title={bar.event.title}
                         style={{ gridColumn: `${bar.startIndex + 1} / span ${bar.endIndex - bar.startIndex + 1}` }}
                         className={cn(
-                          'truncate rounded-md border px-2 py-0.5 text-xs font-medium',
+                          'truncate rounded-md border px-2 py-1 text-sm font-medium',
                           WEEKDAY_COLORS[weekDays[bar.startIndex].getDay()].chip,
                         )}
                       >
@@ -268,17 +276,17 @@ function DayColumn({ day, label, events, meals, chores, color, isToday, colStart
             className={cn('rounded-md border px-1.5 py-1 text-left', color.chip)}
             title={event.title}
           >
-            <p className="line-clamp-2 text-xs leading-tight font-medium">{event.title}</p>
-            <p className="text-[0.65rem] leading-tight opacity-80">{formatEventTime(event)}</p>
+            <p className="line-clamp-2 text-sm leading-tight font-medium">{event.title}</p>
+            <p className="text-xs leading-tight opacity-80">{formatEventTime(event)}</p>
           </div>
         ))}
         {eventOverflowCount > 0 && (
-          <p className="text-muted-foreground px-1 text-[0.65rem]">+{eventOverflowCount} more</p>
+          <p className="text-muted-foreground px-1 text-xs">+{eventOverflowCount} more</p>
         )}
       </div>
 
       <div className={cn('border-border mt-0.5 flex flex-col gap-1 border-t pt-1.5', 'row-start-4', colStart)}>
-        <span className="text-muted-foreground text-[0.6rem] font-semibold tracking-wide uppercase">Dinner</span>
+        <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Dinner</span>
         {!meal && <EmptyDash label="No dinner planned" />}
         {meal && (
           <p className="truncate text-sm leading-tight" title={meal.description ?? meal.name}>
@@ -288,7 +296,7 @@ function DayColumn({ day, label, events, meals, chores, color, isToday, colStart
       </div>
 
       <div className={cn('border-border mt-0.5 flex flex-col gap-1 border-t pt-1.5', 'row-start-5', colStart)}>
-        <span className="text-muted-foreground text-[0.6rem] font-semibold tracking-wide uppercase">Chores</span>
+        <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Chores</span>
         {chores.length === 0 && <EmptyDash label="No chores due" />}
         {visibleChores.map((chore) => {
           // Unassigned chores can't be completed here (completion records who did
@@ -318,7 +326,7 @@ function DayColumn({ day, label, events, meals, chores, color, isToday, colStart
                 {chore.isComplete && <Check className="size-3.5" strokeWidth={3} />}
               </span>
               <span
-                className={cn('line-clamp-2 text-[0.8rem] leading-tight font-medium', chore.isComplete && 'line-through')}
+                className={cn('line-clamp-2 text-sm leading-tight font-medium', chore.isComplete && 'line-through')}
               >
                 {chore.title}
               </span>
@@ -326,7 +334,7 @@ function DayColumn({ day, label, events, meals, chores, color, isToday, colStart
           )
         })}
         {choreOverflowCount > 0 && (
-          <p className="text-muted-foreground px-1 text-[0.6rem]">+{choreOverflowCount} more</p>
+          <p className="text-muted-foreground px-1 text-xs">+{choreOverflowCount} more</p>
         )}
       </div>
     </>

@@ -120,4 +120,50 @@ public class DashboardConfigApiTests(WebApplicationFactory<Program> factory) : I
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task UpdateConfig_PersistsDashboardLayout_AndKeepsItWhenOmitted()
+    {
+        var client = factory.CreateClient();
+        var original = await client.GetFromJsonAsync<DashboardConfigDto>("/api/dashboard/config", JsonOptions);
+        Assert.NotNull(original);
+        var widgets = original!.Widgets.Select(w => new UpdateDashboardWidgetRequest(w.Type, w.Size, w.IsVisible)).ToList();
+
+        try
+        {
+            await client.PutAsJsonAsync(
+                "/api/dashboard/config",
+                new UpdateDashboardConfigRequest(widgets, original.Theme, DashboardLayout: "sidebar"),
+                JsonOptions);
+            var sidebar = await client.GetFromJsonAsync<DashboardConfigDto>("/api/dashboard/config", JsonOptions);
+            Assert.Equal("sidebar", sidebar!.DashboardLayout);
+
+            // A client that only edits widgets/theme must not reset the dashboard layout.
+            await client.PutAsJsonAsync("/api/dashboard/config", new UpdateDashboardConfigRequest(widgets, original.Theme), JsonOptions);
+            var kept = await client.GetFromJsonAsync<DashboardConfigDto>("/api/dashboard/config", JsonOptions);
+            Assert.Equal("sidebar", kept!.DashboardLayout);
+        }
+        finally
+        {
+            await client.PutAsJsonAsync(
+                "/api/dashboard/config",
+                new UpdateDashboardConfigRequest(widgets, original.Theme, original.CalendarView, original.DashboardLayout),
+                JsonOptions);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateConfig_RejectsUnknownDashboardLayout()
+    {
+        var client = factory.CreateClient();
+        var original = await client.GetFromJsonAsync<DashboardConfigDto>("/api/dashboard/config", JsonOptions);
+        var widgets = original!.Widgets.Select(w => new UpdateDashboardWidgetRequest(w.Type, w.Size, w.IsVisible)).ToList();
+
+        var response = await client.PutAsJsonAsync(
+            "/api/dashboard/config",
+            new UpdateDashboardConfigRequest(widgets, original.Theme, DashboardLayout: "diagonal"),
+            JsonOptions);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

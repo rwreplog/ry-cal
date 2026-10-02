@@ -11,6 +11,7 @@ public sealed class DashboardConfiguration : IEntityTypeConfiguration<Dashboard>
         builder.HasKey(d => d.Id);
         builder.Property(d => d.Theme).IsRequired().HasMaxLength(30).HasDefaultValue("modern");
         builder.Property(d => d.CalendarView).IsRequired().HasMaxLength(20).HasDefaultValue("week");
+        builder.Property(d => d.DashboardLayout).IsRequired().HasMaxLength(20).HasDefaultValue("stacked");
         builder.Property(d => d.LocationLabel).HasMaxLength(200);
 
         builder.HasIndex(d => d.FamilyId).IsUnique();

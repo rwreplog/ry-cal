@@ -87,11 +87,13 @@ export interface DashboardWidgetConfigDto {
 }
 
 export type CalendarView = 'week' | 'rolling'
+export type DashboardLayout = 'stacked' | 'sidebar'
 
 export interface DashboardConfigDto {
   widgets: DashboardWidgetConfigDto[]
   theme: string
   calendarView: CalendarView
+  dashboardLayout: DashboardLayout
 }
 
 export type UpdateDashboardWidgetRequest = DashboardWidgetConfigDto
@@ -100,6 +102,7 @@ export interface UpdateDashboardConfigRequest {
   widgets: UpdateDashboardWidgetRequest[]
   theme: string
   calendarView?: CalendarView
+  dashboardLayout?: DashboardLayout
 }
 
 export interface HouseholdLocationDto {

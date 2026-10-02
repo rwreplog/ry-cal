@@ -28,7 +28,10 @@ export function ShoppingListWidget() {
         {!isLoading && isError && <p className="text-destructive text-sm">Couldn&apos;t load the shopping list.</p>}
 
         {!isLoading && !isError && data && data.shoppingList.items.length === 0 && (
-          <p className="text-muted-foreground text-sm">Shopping list is empty.</p>
+          <div className="flex flex-col items-center gap-2 py-4 text-center">
+            <ShoppingCart className="text-muted-foreground/40 size-8" aria-hidden="true" />
+            <p className="text-muted-foreground text-sm">Shopping list is empty — nicely stocked up.</p>
+          </div>
         )}
 
         {!isLoading &&
@@ -41,7 +44,7 @@ export function ShoppingListWidget() {
               onClick={() => toggle.mutate(item.id)}
               aria-label={`Mark ${item.name} checked`}
             >
-              <Circle className="text-muted-foreground size-6 shrink-0" aria-hidden="true" />
+              <Circle className="size-6 shrink-0 text-emerald-500" aria-hidden="true" />
               <span>{item.name}</span>
             </button>
           ))}

@@ -46,7 +46,7 @@ describe('AnnouncementsWidget', () => {
 
     render(<AnnouncementsWidget />)
 
-    expect(screen.getByText('No announcements.')).toBeInTheDocument()
+    expect(screen.getByText(/no announcements/i)).toBeInTheDocument()
   })
 
   it('shows the message, poster, and a relative time, and clamps long messages', () => {

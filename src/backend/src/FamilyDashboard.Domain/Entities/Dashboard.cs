@@ -13,6 +13,12 @@ public sealed class Dashboard
     // "rolling" (today plus the next 6). A string for the same reason as Theme.
     public string CalendarView { get; set; } = "week";
 
+    // How the dashboard page itself is arranged: "stacked" (calendar full-width on
+    // top, everything else flows below) or "sidebar" (calendar fills a tall right
+    // pane, everything else — including the clock — stacks in a left rail). A
+    // string for the same reason as Theme/CalendarView.
+    public string DashboardLayout { get; set; } = "stacked";
+
     // Household location for the Weather widget — null until the admin sets it via
     // Display settings. Lives here rather than a new entity because Dashboard is
     // already the single-row-per-family settings blob and SeedData guarantees a row

@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import { DashboardShell } from '@/features/dashboard/components/DashboardShell'
+import { DashboardRoute } from '@/features/dashboard/components/DashboardRoute'
 import { DashboardSettingsPage } from '@/features/dashboard/components/DashboardSettingsPage'
 import { AnnouncementsPage } from '@/features/announcements/components/AnnouncementsPage'
 import { BirthdaysPage } from '@/features/birthdays/components/BirthdaysPage'
@@ -14,7 +14,7 @@ import { AdminLayout } from './layouts/AdminLayout'
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <DashboardShell />,
+    element: <DashboardRoute />,
   },
   {
     path: '/admin',

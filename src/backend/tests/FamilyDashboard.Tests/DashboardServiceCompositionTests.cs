@@ -94,7 +94,8 @@ internal sealed class StubDashboardConfigService : IDashboardConfigService
             new DashboardWidgetConfigDto("countdowns", WidgetSize.Md, true),
         ],
         "modern",
-        "week");
+        "week",
+        "stacked");
 
     public Task<DashboardConfigDto> GetConfigAsync(CancellationToken cancellationToken) => Task.FromResult(Config);
 

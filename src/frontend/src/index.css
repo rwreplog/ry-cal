@@ -3,7 +3,11 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
-@custom-variant dark (&:is([data-theme='dark'] *));
+/* "Dark" isn't the only dark-background theme — seasonal-halloween inverts to dark
+   too (see its own comment below) — so every dark: utility in the app (event chips,
+   widget accent colors, anything else written against light-mode-by-default) needs
+   to adapt under both, not just the literally-named Dark theme. */
+@custom-variant dark (&:is([data-theme='dark'] *, [data-theme='seasonal-halloween'] *));
 
 @theme inline {
     --font-heading: var(--font-sans);
@@ -204,6 +208,8 @@
     --widget-shopping-fg: oklch(0.28 0.08 140);
     --widget-countdowns-bg: oklch(0.92 0.05 260);
     --widget-countdowns-fg: oklch(0.3 0.08 260);
+    --widget-weather-bg: oklch(0.92 0.04 235);
+    --widget-weather-fg: oklch(0.3 0.07 235);
 }
 
 /* Seasonal / holiday themes — applied by resolveSeasonalTheme (features/theme/
@@ -673,6 +679,34 @@
   100% {
     transform: translate(-20px, -120vh);
     opacity: 0;
+  }
+}
+
+/* HeaderClock's and WeatherWidget's subtle "alive" touches — a blinking clock colon and a slow
+   breathing weather icon, both frozen by the prefers-reduced-motion block below
+   same as every other animation in the app. */
+.clock-colon {
+  animation: clock-blink 1s steps(1) infinite;
+}
+
+@keyframes clock-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.weather-icon-breathe {
+  display: inline-flex;
+  animation: weather-breathe 4s ease-in-out infinite;
+}
+
+@keyframes weather-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
   }
 }
 

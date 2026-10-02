@@ -73,6 +73,11 @@ public sealed class DashboardConfigService(
             throw new ArgumentException("Calendar view must be 'week' or 'rolling'.");
         }
 
+        if (request.DashboardLayout is not null && !DashboardDefaults.DashboardLayouts.Contains(request.DashboardLayout))
+        {
+            throw new ArgumentException("Dashboard layout must be 'stacked' or 'sidebar'.");
+        }
+
         if (request.Widgets.Any(w => string.IsNullOrWhiteSpace(w.Type) || w.Type.Length > 50))
         {
             throw new ArgumentException("Widget type must be between 1 and 50 characters.");
@@ -127,6 +132,7 @@ public sealed class DashboardConfigService(
         // Omitted (null) leaves the saved view untouched, so clients that only edit
         // widgets/theme don't reset it.
         dashboard.CalendarView = request.CalendarView ?? dashboard.CalendarView;
+        dashboard.DashboardLayout = request.DashboardLayout ?? dashboard.DashboardLayout;
         dashboard.UpdatedAtUtc = now;
 
         await db.SaveChangesAsync(cancellationToken);
@@ -190,7 +196,8 @@ public sealed class DashboardConfigService(
             .Select(w => new DashboardWidgetConfigDto(w.Type, w.Size, true))
             .ToList(),
         DashboardDefaults.DefaultTheme,
-        DashboardDefaults.DefaultCalendarView);
+        DashboardDefaults.DefaultCalendarView,
+        DashboardDefaults.DefaultDashboardLayout);
 
     private static DashboardConfigDto ToDto(DashboardEntity dashboard) => new(
         dashboard.Widgets
@@ -198,5 +205,6 @@ public sealed class DashboardConfigService(
             .Select(w => new DashboardWidgetConfigDto(w.Type, w.Size, w.IsVisible))
             .ToList(),
         dashboard.Theme,
-        dashboard.CalendarView);
+        dashboard.CalendarView,
+        dashboard.DashboardLayout);
 }

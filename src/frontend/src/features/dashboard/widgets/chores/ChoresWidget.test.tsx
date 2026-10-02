@@ -100,4 +100,57 @@ describe('ChoresWidget', () => {
 
     expect(screen.getByRole('button', { name: /feed the dog is complete/i })).toBeDisabled()
   })
+
+  it('shows a celebratory message when every chore due today is complete', () => {
+    mockedUseDashboard.mockReturnValue({
+      isLoading: false,
+      isError: false,
+      data: dashboardWith([
+        { id: 'c1', title: 'Feed the dog', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc: new Date().toISOString(), isComplete: true, recurrence: 'none' },
+      ]),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    render(<ChoresWidget />)
+
+    expect(screen.getByText(/all done for today/i)).toBeInTheDocument()
+    // The completed chore itself stays visible underneath the celebration.
+    expect(screen.getByText('Feed the dog')).toBeInTheDocument()
+  })
+
+  it('says nothing is due today when the only chores are later in the week', () => {
+    const nextWeek = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+    mockedUseDashboard.mockReturnValue({
+      isLoading: false,
+      isError: false,
+      data: dashboardWith([
+        { id: 'c1', title: 'Mow lawn', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc: nextWeek, isComplete: false, recurrence: 'none' },
+      ]),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    render(<ChoresWidget />)
+
+    expect(screen.getByText(/nothing due today/i)).toBeInTheDocument()
+    expect(screen.getByText('Upcoming')).toBeInTheDocument()
+    expect(screen.getByText('Mow lawn')).toBeInTheDocument()
+  })
+
+  it('puts an overdue incomplete chore in Today rather than silently dropping it', () => {
+    const lastWeek = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    mockedUseDashboard.mockReturnValue({
+      isLoading: false,
+      isError: false,
+      data: dashboardWith([
+        { id: 'c1', title: 'Water plants', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc: lastWeek, isComplete: false, recurrence: 'none' },
+      ]),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    render(<ChoresWidget />)
+
+    expect(screen.getByText('Water plants')).toBeInTheDocument()
+    expect(screen.queryByText(/all done for today/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/nothing due today/i)).not.toBeInTheDocument()
+  })
 })

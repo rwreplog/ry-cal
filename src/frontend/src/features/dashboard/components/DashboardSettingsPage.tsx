@@ -26,7 +26,7 @@ import { getWidget } from '@/features/dashboard/registry/widgetRegistry'
 import { AUTO_SEASONAL_THEME_ID, SEASONAL_THEMES, THEMES, getEffectiveTheme, seasonalThemeLabel } from '@/features/theme/constants'
 import { usePreviewTheme } from '@/features/theme/PreviewThemeContext'
 import { cn } from '@/lib/utils'
-import type { CalendarView, DashboardWidgetConfigDto } from '@/types/dashboard'
+import type { CalendarView, DashboardLayout, DashboardWidgetConfigDto } from '@/types/dashboard'
 import { LocationSettings } from './LocationSettings'
 
 const SIZE_LABEL: Record<DashboardWidgetConfigDto['size'], string> = {
@@ -38,6 +38,11 @@ const SIZE_LABEL: Record<DashboardWidgetConfigDto['size'], string> = {
 const CALENDAR_VIEW_LABEL: Record<CalendarView, string> = {
   week: 'Sunday – Saturday week',
   rolling: 'Next 7 days (starts today)',
+}
+
+const DASHBOARD_LAYOUT_LABEL: Record<DashboardLayout, string> = {
+  stacked: 'Stacked (calendar on top, widgets below)',
+  sidebar: 'Sidebar (calendar fills the right side)',
 }
 
 const SIZES: DashboardWidgetConfigDto['size'][] = ['sm', 'md', 'lg']
@@ -72,6 +77,7 @@ export function DashboardSettingsPage() {
   const [widgets, setWidgets] = useState<DashboardWidgetConfigDto[]>([])
   const [theme, setTheme] = useState('')
   const [calendarView, setCalendarView] = useState<CalendarView>('week')
+  const [dashboardLayout, setDashboardLayout] = useState<DashboardLayout>('stacked')
   const [seeded, setSeeded] = useState(false)
 
   useEffect(() => {
@@ -79,6 +85,7 @@ export function DashboardSettingsPage() {
       setWidgets(data.widgets)
       setTheme(data.theme)
       setCalendarView(data.calendarView)
+      setDashboardLayout(data.dashboardLayout)
       setSeeded(true)
     }
   }, [data, seeded])
@@ -109,16 +116,21 @@ export function DashboardSettingsPage() {
     // on every other page, so picking "Auto (Seasonal)" previews today's actual
     // holiday palette rather than literally applying the unstyled "auto" id.
     document.documentElement.dataset.theme = getEffectiveTheme(newTheme)
-    update.mutate({ widgets, theme: newTheme, calendarView })
+    update.mutate({ widgets, theme: newTheme, calendarView, dashboardLayout })
   }
 
   const handleCalendarViewChange = (view: CalendarView) => {
     setCalendarView(view)
-    update.mutate({ widgets, theme, calendarView: view })
+    update.mutate({ widgets, theme, calendarView: view, dashboardLayout })
+  }
+
+  const handleDashboardLayoutChange = (layout: DashboardLayout) => {
+    setDashboardLayout(layout)
+    update.mutate({ widgets, theme, calendarView, dashboardLayout: layout })
   }
 
   const handleSave = () => {
-    update.mutate({ widgets, theme, calendarView })
+    update.mutate({ widgets, theme, calendarView, dashboardLayout })
   }
 
   if (isLoading || !seeded) {
@@ -158,6 +170,26 @@ export function DashboardSettingsPage() {
             {(Object.keys(CALENDAR_VIEW_LABEL) as CalendarView[]).map((view) => (
               <SelectItem key={view} value={view}>
                 {CALENDAR_VIEW_LABEL[view]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">Dashboard layout</h2>
+        <p className="text-muted-foreground text-sm">
+          Sidebar suits a wide, landscape screen — the calendar fills the full height on the right and everything
+          else (including the clock) lines up in a rail on the left. It falls back to Stacked on a narrower screen.
+        </p>
+        <Select value={dashboardLayout} onValueChange={(v) => handleDashboardLayoutChange(v as DashboardLayout)}>
+          <SelectTrigger aria-label="Dashboard layout" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(DASHBOARD_LAYOUT_LABEL) as DashboardLayout[]).map((layout) => (
+              <SelectItem key={layout} value={layout}>
+                {DASHBOARD_LAYOUT_LABEL[layout]}
               </SelectItem>
             ))}
           </SelectContent>

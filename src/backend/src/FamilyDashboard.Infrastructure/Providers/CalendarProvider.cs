@@ -11,6 +11,7 @@ using Ical.Net.DataTypes;
 using Ical.Net.Evaluation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 // Alias: FamilyDashboard.Infrastructure.Calendar (imported below) collides with
 // Ical.Net's `Calendar` class name.
 using IcsCalendar = Ical.Net.Calendar;
@@ -29,7 +30,8 @@ public sealed class CalendarProvider(
     ICurrentUserService currentUser,
     IHttpClientFactory httpClientFactory,
     IMemoryCache cache,
-    TimeProvider timeProvider) : ICalendarProvider
+    TimeProvider timeProvider,
+    ILogger<CalendarProvider> logger) : ICalendarProvider
 {
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
 
@@ -140,8 +142,9 @@ public sealed class CalendarProvider(
 
             icsText = await response.Content.ReadAsStringAsync(cancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogWarning(ex, "Failed to fetch the ICS calendar feed.");
             return [];
         }
 
@@ -171,9 +174,12 @@ public sealed class CalendarProvider(
                 .OfType<CalendarEventDto>()
                 .ToList();
         }
-        catch
+        catch (Exception ex)
         {
-            return []; // malformed feed — fail soft rather than break the dashboard
+            // Fail soft rather than break the dashboard — but log it, since a silent
+            // empty result here is indistinguishable from "no events this week".
+            logger.LogWarning(ex, "Failed to parse the ICS calendar feed.");
+            return [];
         }
     }
 
