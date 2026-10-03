@@ -135,6 +135,7 @@ describe('CalendarWidget', () => {
         chores: [
           {
             id: 'chore-1',
+            choreId: 'chore-1',
             title: 'Empty dishwasher',
             assignedTo: 'Sam',
             assignedToFamilyMemberId: 'member-1',
@@ -162,6 +163,7 @@ describe('CalendarWidget', () => {
         chores: [
           {
             id: 'chore-1',
+            choreId: 'chore-1',
             title: 'Empty dishwasher',
             assignedTo: 'Sam',
             assignedToFamilyMemberId: 'member-1',
@@ -177,7 +179,9 @@ describe('CalendarWidget', () => {
     render(<CalendarWidget />)
     await user.click(screen.getByRole('button', { name: /mark empty dishwasher complete/i }))
 
-    expect(completeMutate).toHaveBeenCalledWith({ id: 'chore-1', request: { familyMemberId: 'member-1' } })
+    expect(completeMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'chore-1', request: expect.objectContaining({ familyMemberId: 'member-1' }) }),
+    )
   })
 
   it('does not allow completing an unassigned chore or one already complete', () => {
@@ -187,8 +191,8 @@ describe('CalendarWidget', () => {
       isError: false,
       data: dashboardWith({
         chores: [
-          { id: 'a', title: 'Unassigned one', assignedTo: '', assignedToFamilyMemberId: null, assignedToColor: null, dueAtUtc, isComplete: false, recurrence: 'none' },
-          { id: 'b', title: 'Done one', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc, isComplete: true, recurrence: 'none' },
+          { id: 'a', choreId: 'a', title: 'Unassigned one', assignedTo: '', assignedToFamilyMemberId: null, assignedToColor: null, dueAtUtc, isComplete: false, recurrence: 'none' },
+          { id: 'b', choreId: 'b', title: 'Done one', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc, isComplete: true, recurrence: 'none' },
         ],
       }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -209,6 +213,7 @@ describe('CalendarWidget', () => {
         chores: [
           {
             id: 'chore-1',
+            choreId: 'chore-1',
             title: 'Empty dishwasher',
             assignedTo: 'Sam',
             assignedToFamilyMemberId: 'member-1',
@@ -218,6 +223,7 @@ describe('CalendarWidget', () => {
           },
           {
             id: 'chore-2',
+            choreId: 'chore-2',
             title: 'Feed the dog',
             assignedTo: 'Sam',
             assignedToFamilyMemberId: 'member-1',
@@ -227,6 +233,7 @@ describe('CalendarWidget', () => {
           },
           {
             id: 'chore-3',
+            choreId: 'chore-3',
             title: 'Take out trash',
             assignedTo: 'Jordan',
             assignedToFamilyMemberId: 'member-2',
@@ -327,7 +334,7 @@ describe('CalendarWidget', () => {
       isError: false,
       data: dashboardWith({
         chores: [
-          { id: 'u', title: 'Water plants', assignedTo: 'Unassigned', assignedToFamilyMemberId: null, assignedToColor: null, dueAtUtc: new Date().toISOString(), isComplete: false, recurrence: 'none' },
+          { id: 'u', choreId: 'u', title: 'Water plants', assignedTo: 'Unassigned', assignedToFamilyMemberId: null, assignedToColor: null, dueAtUtc: new Date().toISOString(), isComplete: false, recurrence: 'none' },
         ],
       }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -345,7 +352,7 @@ describe('CalendarWidget', () => {
       isError: false,
       data: dashboardWith({
         chores: [
-          { id: 'd', title: 'Feed cat', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc: new Date().toISOString(), isComplete: false, recurrence: 'daily' },
+          { id: 'd', choreId: 'd', title: 'Feed cat', assignedTo: 'Sam', assignedToFamilyMemberId: 'member-1', assignedToColor: '#0ea5e9', dueAtUtc: new Date().toISOString(), isComplete: false, recurrence: 'daily' },
         ],
       }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

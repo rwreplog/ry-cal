@@ -13,7 +13,7 @@ internal sealed class StubChoreProvider : IChoreProvider
     public Task<IReadOnlyList<ChoreSummaryDto>> GetActiveChoresAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<ChoreSummaryDto>>(
         [
-            new ChoreSummaryDto("chore-1", "Take out the trash", "Sam", null, "#0ea5e9", DateTimeOffset.UtcNow, false, RecurrenceType.None),
+            new ChoreSummaryDto("chore-1", Guid.NewGuid(), "Take out the trash", "Sam", null, "#0ea5e9", DateTimeOffset.UtcNow, false, RecurrenceType.None),
         ]);
 }
 

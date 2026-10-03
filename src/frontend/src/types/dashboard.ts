@@ -15,7 +15,10 @@ export interface CalendarEventDto {
 }
 
 export interface ChoreSummaryDto {
+  // Per-occurrence-unique (a 'weekdays' chore emits several rows a week sharing
+  // one choreId) — choreId is what gets sent back to complete/assign.
   id: string
+  choreId: string
   title: string
   assignedTo: string
   assignedToFamilyMemberId: string | null

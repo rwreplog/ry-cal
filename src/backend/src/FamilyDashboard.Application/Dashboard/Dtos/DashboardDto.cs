@@ -28,7 +28,10 @@ public sealed record CalendarEventDto(
 public sealed record ChoresSectionDto(IReadOnlyList<ChoreSummaryDto> Items);
 
 public sealed record ChoreSummaryDto(
+    // Id is per-occurrence-unique (a Weekdays chore emits several rows a week that
+    // share one ChoreId) — ChoreId is what the frontend sends back to complete/assign.
     string Id,
+    Guid ChoreId,
     string Title,
     string AssignedTo,
     Guid? AssignedToFamilyMemberId,

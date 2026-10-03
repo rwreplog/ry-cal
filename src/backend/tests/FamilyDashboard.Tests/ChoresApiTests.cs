@@ -177,4 +177,91 @@ public class ChoresApiTests(WebApplicationFactory<Program> factory) : IClassFixt
             await client.DeleteAsync($"/api/family-members/{member.Id}");
         }
     }
+
+    [Fact]
+    public async Task CreateWeekdaysChore_ReturnsItsSchedule()
+    {
+        var client = factory.CreateClient();
+        var ryan = await CreateFamilyMemberAsync(client, $"Recurring Member {Guid.NewGuid():N}");
+        var victoria = await CreateFamilyMemberAsync(client, $"Recurring Member {Guid.NewGuid():N}");
+        var title = $"Test Chore {Guid.NewGuid():N}";
+
+        var createResponse = await client.PostAsJsonAsync(
+            "/api/chores",
+            new CreateChoreRequest(title, null, null, RecurrenceType.Weekdays, DateTimeOffset.UtcNow.AddHours(1),
+                [new ChoreScheduleEntryRequest(DayOfWeek.Monday, ryan.Id), new ChoreScheduleEntryRequest(DayOfWeek.Wednesday, victoria.Id)]),
+            JsonOptions);
+
+        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+        var chore = await createResponse.Content.ReadFromJsonAsync<ChoreDto>(JsonOptions);
+        Assert.Null(chore!.AssignedToFamilyMemberId); // assignment lives on the schedule, not the chore itself
+        Assert.Equal(2, chore.Schedule.Count);
+        Assert.Contains(chore.Schedule, e => e.DayOfWeek == DayOfWeek.Monday && e.FamilyMemberId == ryan.Id);
+        Assert.Contains(chore.Schedule, e => e.DayOfWeek == DayOfWeek.Wednesday && e.FamilyMemberId == victoria.Id);
+
+        await client.DeleteAsync($"/api/chores/{chore.Id}");
+    }
+
+    [Fact]
+    public async Task CreateWeekdaysChore_RejectsEmptyOrDuplicateSchedule()
+    {
+        var client = factory.CreateClient();
+        var title = $"Test Chore {Guid.NewGuid():N}";
+        var dueAt = DateTimeOffset.UtcNow.AddHours(1);
+
+        var emptyResponse = await client.PostAsJsonAsync(
+            "/api/chores", new CreateChoreRequest(title, null, null, RecurrenceType.Weekdays, dueAt, []), JsonOptions);
+        Assert.Equal(HttpStatusCode.BadRequest, emptyResponse.StatusCode);
+
+        var duplicateResponse = await client.PostAsJsonAsync(
+            "/api/chores",
+            new CreateChoreRequest(title, null, null, RecurrenceType.Weekdays, dueAt,
+                [new ChoreScheduleEntryRequest(DayOfWeek.Monday, null), new ChoreScheduleEntryRequest(DayOfWeek.Monday, null)]),
+            JsonOptions);
+        Assert.Equal(HttpStatusCode.BadRequest, duplicateResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task WeekdaysChore_ShowsOneDashboardOccurrencePerScheduledDay_AndCompletesIndependently()
+    {
+        var client = factory.CreateClient();
+        var ryan = await CreateFamilyMemberAsync(client, $"Recurring Member {Guid.NewGuid():N}");
+        var victoria = await CreateFamilyMemberAsync(client, $"Recurring Member {Guid.NewGuid():N}");
+        var title = $"Test Recurring Chore {Guid.NewGuid():N}";
+
+        var createResponse = await client.PostAsJsonAsync(
+            "/api/chores",
+            new CreateChoreRequest(title, null, null, RecurrenceType.Weekdays, DateTimeOffset.UtcNow.AddHours(1),
+                [new ChoreScheduleEntryRequest(DayOfWeek.Monday, ryan.Id), new ChoreScheduleEntryRequest(DayOfWeek.Wednesday, victoria.Id)]),
+            JsonOptions);
+        var chore = await createResponse.Content.ReadFromJsonAsync<ChoreDto>(JsonOptions);
+
+        try
+        {
+            var dashboardBefore = await client.GetFromJsonAsync<DashboardDto>("/api/dashboard", JsonOptions);
+            var occurrences = dashboardBefore!.Chores.Items.Where(c => c.Title == title).ToList();
+            Assert.Equal(2, occurrences.Count);
+            Assert.All(occurrences, c => Assert.Equal(chore!.Id, c.ChoreId));
+            Assert.All(occurrences, c => Assert.False(c.IsComplete));
+            var mondayOccurrence = Assert.Single(occurrences, c => c.AssignedToFamilyMemberId == ryan.Id);
+            var wednesdayOccurrence = Assert.Single(occurrences, c => c.AssignedToFamilyMemberId == victoria.Id);
+            Assert.NotEqual(mondayOccurrence.DueAtUtc, wednesdayOccurrence.DueAtUtc);
+
+            await client.PostAsJsonAsync(
+                $"/api/chores/{chore!.Id}/complete",
+                new CompleteChoreRequest(ryan.Id, mondayOccurrence.DueAtUtc),
+                JsonOptions);
+
+            var dashboardAfter = await client.GetFromJsonAsync<DashboardDto>("/api/dashboard", JsonOptions);
+            var afterOccurrences = dashboardAfter!.Chores.Items.Where(c => c.Title == title).ToList();
+            Assert.Contains(afterOccurrences, c => c.IsComplete && c.AssignedToFamilyMemberId == ryan.Id);
+            Assert.Contains(afterOccurrences, c => !c.IsComplete && c.AssignedToFamilyMemberId == victoria.Id);
+        }
+        finally
+        {
+            await client.DeleteAsync($"/api/chores/{chore!.Id}");
+            await client.DeleteAsync($"/api/family-members/{ryan.Id}");
+            await client.DeleteAsync($"/api/family-members/{victoria.Id}");
+        }
+    }
 }

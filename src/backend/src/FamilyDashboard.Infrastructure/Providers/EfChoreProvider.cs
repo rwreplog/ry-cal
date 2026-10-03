@@ -1,6 +1,8 @@
+using FamilyDashboard.Application.Chores;
 using FamilyDashboard.Application.Common;
 using FamilyDashboard.Application.Dashboard.Dtos;
 using FamilyDashboard.Application.Providers;
+using FamilyDashboard.Domain.Entities;
 using FamilyDashboard.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +29,7 @@ public sealed class EfChoreProvider(AppDbContext db, ICurrentUserService current
         }
 
         var rows = await db.Chores
-            .Where(c => c.FamilyId == familyId && !c.IsComplete)
+            .Where(c => c.FamilyId == familyId && c.Recurrence != RecurrenceType.Weekdays && !c.IsComplete)
             .GroupJoin(db.FamilyMembers, c => c.AssignedToFamilyMemberId, m => (Guid?)m.Id, (c, members) => new { Chore = c, Members = members })
             .SelectMany(x => x.Members.DefaultIfEmpty(), (x, m) => new { x.Chore, AssignedToName = m != null ? m.Name : null, AssignedToColor = m != null ? m.Color : null })
             .OrderBy(x => x.Chore.DueAtUtc)
@@ -39,7 +41,8 @@ public sealed class EfChoreProvider(AppDbContext db, ICurrentUserService current
         // checked off, so only its completion history remembers it was done. Each
         // entry stays on the day it was due (falling back to the completion time for
         // rows recorded before that was tracked) and is attributed to whoever
-        // completed it.
+        // completed it. This generically covers Weekdays completions too (joined
+        // purely through ChoreCompletion -> Chore, no recurrence-specific logic).
         var since = timeProvider.GetUtcNow() - CompletedVisibleFor;
         var completedRows = await db.ChoreCompletions
             .Where(cc => cc.CompletedAtUtc >= since)
@@ -49,8 +52,13 @@ public sealed class EfChoreProvider(AppDbContext db, ICurrentUserService current
             .Take(DashboardChoreLimit)
             .ToListAsync(cancellationToken);
 
+        var completedOccurrences = completedRows
+            .Select(x => (x.Chore.Id, DueAtUtc: x.Completion.DueAtUtc ?? x.Completion.CompletedAtUtc))
+            .ToHashSet();
+
         var completed = completedRows.Select(x => new ChoreSummaryDto(
             x.Completion.Id.ToString(),
+            x.Chore.Id,
             x.Chore.Title,
             x.Member.Name,
             x.Member.Id,
@@ -59,9 +67,12 @@ public sealed class EfChoreProvider(AppDbContext db, ICurrentUserService current
             true,
             x.Chore.Recurrence));
 
+        var weekdaysOccurrences = await BuildWeekdaysOccurrencesAsync(familyId, completedOccurrences, cancellationToken);
+
         return rows
             .Select(x => new ChoreSummaryDto(
                 x.Chore.Id.ToString(),
+                x.Chore.Id,
                 x.Chore.Title,
                 x.AssignedToName ?? "Unassigned",
                 x.Chore.AssignedToFamilyMemberId,
@@ -69,7 +80,61 @@ public sealed class EfChoreProvider(AppDbContext db, ICurrentUserService current
                 x.Chore.DueAtUtc,
                 x.Chore.IsComplete,
                 x.Chore.Recurrence))
+            .Concat(weekdaysOccurrences)
             .Concat(completed)
             .ToList();
+    }
+
+    // Weekdays chores store no DueAtUtc/IsComplete of their own — each scheduled day
+    // is recomputed fresh, every request, against the current week (see
+    // ChoreScheduleExpander). Deliberately plain UTC day-of-week arithmetic, not
+    // household-timezone-aware — matches ChoreRecurrenceCalculator's existing
+    // simplification for Daily/Weekly; real timezone handling is a separate,
+    // pre-existing gap this feature isn't taking on.
+    private async Task<List<ChoreSummaryDto>> BuildWeekdaysOccurrencesAsync(
+        Guid familyId, HashSet<(Guid ChoreId, DateTimeOffset DueAtUtc)> completedOccurrences, CancellationToken cancellationToken)
+    {
+        var chores = await db.Chores
+            .Where(c => c.FamilyId == familyId && c.Recurrence == RecurrenceType.Weekdays)
+            .ToListAsync(cancellationToken);
+
+        if (chores.Count == 0)
+        {
+            return [];
+        }
+
+        var choreIds = chores.Select(c => c.Id).ToList();
+        var entries = await db.ChoreScheduleEntries
+            .Where(e => choreIds.Contains(e.ChoreId))
+            .GroupJoin(db.FamilyMembers, e => e.AssignedToFamilyMemberId, m => (Guid?)m.Id, (e, members) => new { Entry = e, Members = members })
+            .SelectMany(x => x.Members.DefaultIfEmpty(), (x, m) => new { x.Entry, Name = m != null ? m.Name : null, Color = m != null ? m.Color : null })
+            .ToListAsync(cancellationToken);
+
+        var choresById = chores.ToDictionary(c => c.Id);
+        var now = timeProvider.GetUtcNow();
+
+        var result = new List<ChoreSummaryDto>();
+        foreach (var x in entries)
+        {
+            var chore = choresById[x.Entry.ChoreId];
+            var occurrenceDueAtUtc = ChoreScheduleExpander.ComputeOccurrenceDueAtUtc(x.Entry.DayOfWeek, chore.DueAtUtc, now);
+            if (completedOccurrences.Contains((chore.Id, occurrenceDueAtUtc)))
+            {
+                continue; // already covered by the completedRows query above
+            }
+
+            result.Add(new ChoreSummaryDto(
+                $"{chore.Id}:{x.Entry.DayOfWeek}",
+                chore.Id,
+                chore.Title,
+                x.Name ?? "Unassigned",
+                x.Entry.AssignedToFamilyMemberId,
+                x.Color,
+                occurrenceDueAtUtc,
+                false,
+                RecurrenceType.Weekdays));
+        }
+
+        return result;
     }
 }

@@ -46,7 +46,10 @@ export function ChoresWidget() {
 
   const handleComplete = (chore: ChoreSummaryDto) => {
     if (!chore.assignedToFamilyMemberId || chore.isComplete) return
-    complete.mutate({ id: chore.id, request: { familyMemberId: chore.assignedToFamilyMemberId } })
+    complete.mutate({
+      id: chore.choreId,
+      request: { familyMemberId: chore.assignedToFamilyMemberId, occurrenceDueAtUtc: chore.dueAtUtc },
+    })
   }
 
   const items = data?.chores.items ?? []

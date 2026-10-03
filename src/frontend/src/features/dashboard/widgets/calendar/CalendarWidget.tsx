@@ -97,7 +97,10 @@ export function CalendarWidget({ className }: CalendarWidgetProps = {}) {
   const { complete } = useChoreMutations()
   const handleCompleteChore = (chore: ChoreSummaryDto) => {
     if (!chore.assignedToFamilyMemberId || chore.isComplete) return
-    complete.mutate({ id: chore.id, request: { familyMemberId: chore.assignedToFamilyMemberId } })
+    complete.mutate({
+      id: chore.choreId,
+      request: { familyMemberId: chore.assignedToFamilyMemberId, occurrenceDueAtUtc: chore.dueAtUtc },
+    })
   }
   // Re-evaluated periodically so a kiosk left running past midnight rolls the week
   // (and the "today" highlight) forward instead of freezing on the day it loaded.

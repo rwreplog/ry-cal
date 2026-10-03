@@ -26,6 +26,7 @@ function event(overrides: Partial<CalendarEventDto> = {}): CalendarEventDto {
 function chore(overrides: Partial<ChoreSummaryDto> = {}): ChoreSummaryDto {
   return {
     id: 'chore-1',
+    choreId: 'chore-1',
     title: 'Test chore',
     assignedTo: 'Sam',
     assignedToFamilyMemberId: 'member-1',
@@ -241,6 +242,23 @@ describe('bucketChoresByDay (rolling window)', () => {
   it('does not repeat completed entries', () => {
     const buckets = bucketChoresByDay([chore({ recurrence: 'daily', isComplete: true, dueAtUtc: '2026-01-07T14:00:00Z' })], days)
     expect(buckets.map((b) => b.length)).toEqual([1, 0, 0, 0, 0, 0, 0])
+  })
+
+  // A 'weekdays' chore's occurrences are already resolved server-side (one row per
+  // scheduled day, each with its own real dueAtUtc) — unlike daily/weekly, there's
+  // no client-side repeat-projection for this type; each row just lands on its own
+  // day like a one-off chore would.
+  it('does not project a weekdays chore onto any day other than its own occurrence', () => {
+    const buckets = bucketChoresByDay(
+      [
+        chore({ id: 'w:wednesday', choreId: 'w', recurrence: 'weekdays', dueAtUtc: '2026-01-07T14:00:00Z' }), // Wed, index 0
+        chore({ id: 'w:thursday', choreId: 'w', recurrence: 'weekdays', dueAtUtc: '2026-01-08T14:00:00Z' }), // Thu, index 1
+      ],
+      days,
+    )
+    expect(buckets.map((b) => b.length)).toEqual([1, 1, 0, 0, 0, 0, 0])
+    expect(buckets[0][0].isProjection).toBe(false)
+    expect(buckets[1][0].isProjection).toBe(false)
   })
 })
 

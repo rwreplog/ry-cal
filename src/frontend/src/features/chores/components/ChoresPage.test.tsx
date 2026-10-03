@@ -29,6 +29,7 @@ function chore(overrides: Partial<ChoreDto> = {}): ChoreDto {
     dueAtUtc: new Date().toISOString(),
     isComplete: false,
     lastCompletedAtUtc: null,
+    schedule: [],
     ...overrides,
   }
 }

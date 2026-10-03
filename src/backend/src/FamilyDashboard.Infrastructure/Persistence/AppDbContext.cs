@@ -10,6 +10,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<User> Users => Set<User>();
     public DbSet<Chore> Chores => Set<Chore>();
     public DbSet<ChoreCompletion> ChoreCompletions => Set<ChoreCompletion>();
+    public DbSet<ChoreScheduleEntry> ChoreScheduleEntries => Set<ChoreScheduleEntry>();
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
     public DbSet<Dashboard> Dashboards => Set<Dashboard>();
     public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
